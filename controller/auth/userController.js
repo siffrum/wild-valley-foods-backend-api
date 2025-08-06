@@ -75,21 +75,22 @@ export const loginController = async (req, res) => {
     const isValid = await bcryptjs.compare(password, user.password);
     if (!isValid) return sendError(res, "Invalid credentials", 401);
 
-    const accessToken = generateAccessToken(user.dataValues);
-    const refreshToken = generateRefreshToken(user.dataValues);
-    await user.update({ refreshToken, lastLoginAt: new Date() });
+const accessToken = await generateAccessToken(user.dataValues);
+const refreshToken = await generateRefreshToken(user.dataValues); // ✅ FIXED
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-    });
+await user.update({ refreshToken, lastLoginAt: new Date() });
 
-    return sendSuccess(res, {
-      username: user.username,
-      role: user.role,
-      accessToken,
-      refreshToken,
-    });
+res.cookie("refreshToken", refreshToken, {
+  httpOnly: true,
+  secure: true,
+});
+
+return sendSuccess(res, {
+  username: user.username,
+  role: user.role,
+  accessToken,
+  refreshToken,
+});
   } catch (error) {
     return sendError(res, error.message || "Internal Error");
   }
