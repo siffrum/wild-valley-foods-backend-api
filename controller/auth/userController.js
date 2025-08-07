@@ -35,6 +35,7 @@ export const registerController = async (req, res) => {
       email,
       password: hashedPass,
       role,
+      refreshToken: null 
     });
 
     return sendSuccess(
