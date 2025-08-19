@@ -1,4 +1,7 @@
+
 import { Sequelize } from "sequelize";
+import dotenv from "dotenv";
+dotenv.config();
 import createUserModel from "../model/userModel.js";
 import createLicenseModel from "../model/licences.model.js";
 import createModuleModel from "../model/module.model.js";

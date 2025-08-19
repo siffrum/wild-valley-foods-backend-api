@@ -1,4 +1,7 @@
 import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+dotenv.config();
 import cookie from "cookie-parser";
 import { dbConnection } from "./db/dbconnection.js";
 import router from "./route/auth/auth.routes.js";
@@ -9,10 +12,7 @@ import category from "./route/product/category.route.js";
 import product from "./route/product/product.route.js";
 import adminProduct from './route/product/adminProduct.route.js';
 import bodyParser from 'body-parser';
-import dotenv from "dotenv";
-import cors from "cors";
-// Load environment variables from .env file
-dotenv.config();
+
 const app = express();
 // Increase the body size limit (50MB is safe for base64 images)
 app.use(bodyParser.json({ limit: '50mb' }));
@@ -42,9 +42,14 @@ app.use(`${process.env.BASE_URL}/product`, product);         // public routes
 app.use(`${process.env.BASE_URL}/admin/product`, adminProduct); // admin routes
 
 
-// Database connection
-dbConnection(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS);
+//Local  Database connection
+// dbConnection(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS);
+
+// Production database connection
+dbConnection();
+
 // Start the server
 app.listen(process.env.PORT, () => {
   console.log(`Server is running at port ${process.env.PORT}`);
 });
+
