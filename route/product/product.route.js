@@ -1,18 +1,15 @@
 import express from 'express';
-import {
-  createProduct, updateProduct, deleteProduct, getAllProducts, getProductById,getAllProductsByOdata
+import { getAllProducts, getProductById,getAllProductsByOdata,getProductCount
 } from '../../controller/product/product.controller.js';
 
-import authenticate from '../../middlewares/auth/auth.js';
+
 
 const router = express.Router();
 
 // Products
-router.get('/products', getAllProducts);                       // Public
-router.get('/products/:id', getProductById);                   // Public
-router.post('/admin', authenticate, createProduct);   // Admin
-router.put('/admin/products/:id', authenticate, updateProduct);   // Admin
-router.delete('/admin/products/:id', authenticate, deleteProduct); // Admin
-router.get('/products/odata', getAllProductsByOdata); // Public OData
+router.get('/', getAllProducts);                       // Public
+router.get('/:id', getProductById);                   // Public
+router.get('/odata', getAllProductsByOdata); // Public OData
+router.get('/count',getProductCount)
 
 export default router;

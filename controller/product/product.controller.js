@@ -112,6 +112,23 @@ export const getAllProducts = async (req, res) => {
   }
 };
 
+// Public: Get Total Product Count
+export const getProductCount = async (req, res) => {
+  try {
+    const total = await Product.count();
+
+    const response = {
+      intResponse: total,
+      responseMessage: "Total product count fetched successfully",
+    };
+
+    return sendSuccess(res, response);
+  } catch (err) {
+    return sendError(res, err.message);
+  }
+};
+
+
 // ✅ [GET ALL PRODUCTS BY ODATA with pagination]
 export const getAllProductsByOdata = async (req, res) => {
   try {

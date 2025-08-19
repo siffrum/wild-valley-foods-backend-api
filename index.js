@@ -7,6 +7,7 @@ import moduleRouter from "./route/License/module.route.js";
 import bannerRoute from "./route/websiteResources/banner.route.js";
 import category from "./route/product/category.route.js";
 import product from "./route/product/product.route.js";
+import adminProduct from './route/product/adminProduct.route.js';
 import bodyParser from 'body-parser';
 import dotenv from "dotenv";
 import cors from "cors";
@@ -37,7 +38,9 @@ app.use(`${process.env.BASE_URL}/license`, licenseRouter);
 app.use(`${process.env.BASE_URL}/module`, moduleRouter);
 app.use(`${process.env.BASE_URL}/banner`, bannerRoute);
 app.use(`${process.env.BASE_URL}`, category);
-app.use(`${process.env.BASE_URL}/product`, product);
+app.use(`${process.env.BASE_URL}/product`, product);         // public routes
+app.use(`${process.env.BASE_URL}/admin/product`, adminProduct); // admin routes
+
 
 // Database connection
 dbConnection(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS);

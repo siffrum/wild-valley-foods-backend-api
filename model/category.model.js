@@ -16,9 +16,22 @@ const createCategoryModel = (sequelize) => {
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    imageUrl: {
+    category_icon: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    slider: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    sequence: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 0,
+    },
+    status: {
+      type: DataTypes.ENUM('active', 'inactive'),
+      defaultValue: 'active',
     },
     createdBy: {
       type: DataTypes.INTEGER,
@@ -34,8 +47,10 @@ const createCategoryModel = (sequelize) => {
     updatedAt: 'lastModifiedOnUTC',
     indexes: [
       { fields: ['name'] },
+      { fields: ['status'] },
     ],
   });
+
   return Category;
 };
 

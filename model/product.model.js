@@ -35,14 +35,6 @@ const createProductModel = (sequelize) => {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
     },
-    dimensions: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    }, // { length, width, height }
-    packageDetails: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
     shippingOptions: {
       type: DataTypes.JSONB,
       allowNull: true,

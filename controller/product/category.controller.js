@@ -1,12 +1,14 @@
-import { categories as Category } from '../../db/dbconnection.js'; 
+import { categories as Category } from '../../db/dbconnection.js';
 import { sendSuccess, sendError } from '../../Helper/response.helper.js';
 
 // Admin Only: Create Category
 export const createCategory = async (req, res) => {
-  const { reqData } = req.body;
   try {
     if (req.user.role !== 'Admin') return sendError(res, 'Unauthorized', 403);
+
+    let reqData = req.body.reqData;
     reqData.createdBy = req.user.id;
+
     const category = await Category.create(reqData);
     return sendSuccess(res, category, 201);
   } catch (err) {
@@ -16,11 +18,17 @@ export const createCategory = async (req, res) => {
 
 // Admin Only: Update Category
 export const updateCategory = async (req, res) => {
-  const { reqData } = req.body;
   try {
     if (req.user.role !== 'Admin') return sendError(res, 'Unauthorized', 403);
+
+    let reqData = req.body.reqData;
     reqData.lastModifiedBy = req.user.id;
-    const updated = await Category.update(reqData, { where: { id: req.params.id }, returning: true });
+
+    const updated = await Category.update(reqData, {
+      where: { id: req.params.id },
+      returning: true,
+    });
+
     return sendSuccess(res, updated[1][0]);
   } catch (err) {
     return sendError(res, err.message);
@@ -31,6 +39,7 @@ export const updateCategory = async (req, res) => {
 export const deleteCategory = async (req, res) => {
   try {
     if (req.user.role !== 'Admin') return sendError(res, 'Unauthorized', 403);
+
     await Category.destroy({ where: { id: req.params.id } });
     return sendSuccess(res, null);
   } catch (err) {
@@ -38,20 +47,77 @@ export const deleteCategory = async (req, res) => {
   }
 };
 
-// Public: Get All Categories
-export const getAllCategories = async (req, res) => {
+// ✅ [GET ALL CATEGORIES]
+// Public: Get All Categories with Pagination
+export const getAllCategoriesPaginated = async (req, res) => {
   try {
-    const categories = await Category.findAll();
+    const skip = parseInt(req.query.skip) || 0;
+    const top = parseInt(req.query.top) || 10;
+
+    const categories = await Category.findAll({
+      where: { parent_id: null },
+      include: [
+        {
+          model: Category,
+          as: 'subcategories',
+          required: false,
+        },
+      ],
+      order: [['sequence', 'ASC']],
+      offset: skip,
+      limit: top,
+    });
+
     return sendSuccess(res, categories);
   } catch (err) {
     return sendError(res, err.message);
   }
 };
 
-// Public: Get Category By ID
+
+// Public: Get All Categories with Subcategories
+export const getAllCategories = async (req, res) => {
+  try {
+    const categories = await Category.findAll({
+      where: { parent_id: null },
+      include: [
+        {
+          model: Category,
+          as: 'subcategories',
+          required: false,
+        },
+      ],
+      order: [['sequence', 'ASC']],
+    });
+    return sendSuccess(res, categories);
+  } catch (err) {
+    return sendError(res, err.message);
+  }
+};
+// Public: Get Total Category Count
+export const getCategoryCount = async (req, res) => {
+  try {
+    const total = await Category.count({
+      where: { parent_id: null },
+    });
+
+    const response = {
+      intResponse: total,
+      responseMessage: "Total category count fetched successfully",
+    };
+
+    return sendSuccess(res, response);
+  } catch (err) {
+    return sendError(res, err.message);
+  }
+};
+
+// Public: Get Category By ID with Subcategories
 export const getCategoryById = async (req, res) => {
   try {
-    const category = await Category.findByPk(req.params.id);
+    const category = await Category.findByPk(req.params.id, {
+      include: [{ model: Category, as: 'subcategories' }],
+    });
     if (!category) return sendError(res, 'Category not found', 404);
     return sendSuccess(res, category);
   } catch (err) {
