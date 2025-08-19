@@ -49,20 +49,13 @@ export const deleteCategory = async (req, res) => {
 
 // ✅ [GET ALL CATEGORIES]
 // Public: Get All Categories with Pagination
+// ✅ Get All Categories (Paginated, without subcategories)
 export const getAllCategoriesPaginated = async (req, res) => {
   try {
     const skip = parseInt(req.query.skip) || 0;
     const top = parseInt(req.query.top) || 10;
 
     const categories = await Category.findAll({
-      where: { parent_id: null },
-      include: [
-        {
-          model: Category,
-          as: 'subcategories',
-          required: false,
-        },
-      ],
       order: [['sequence', 'ASC']],
       offset: skip,
       limit: top,
@@ -72,7 +65,7 @@ export const getAllCategoriesPaginated = async (req, res) => {
   } catch (err) {
     return sendError(res, err.message);
   }
-};
+}
 
 
 // Public: Get All Categories with Subcategories
