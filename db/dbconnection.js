@@ -26,6 +26,7 @@ let Image = null;
 
 //production
 export const dbConnection = async () => {
+  console.log("DATABASE_URL:", process.env.DATABASE_URL);
   const sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: "postgres",
     protocol: "postgres",
