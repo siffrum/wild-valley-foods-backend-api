@@ -8,13 +8,13 @@ const router = express.Router();
 
 // Categories
 // Public
+router.get('/categories/paginated', getAllCategoriesPaginated);   // paginated
 router.get('/categories', getAllCategories);
-router.get('/categories/:id', getCategoryById);
+router.get('/categories/count', getCategoryCount); 
+router.get('/categoryById/:id', getCategoryById);
 
 // Admin
-router.post('/admin/categories', authenticate, createCategory);
-router.put('/admin/categories/:id', authenticate, updateCategory);
-router.delete('/admin/categories/:id', authenticate, deleteCategory);
-router.get('/admin/categories/paginated', getAllCategoriesPaginated);    // paginated
-router.get('/admin/categories/count', getCategoryCount); 
+router.post('/admin/createcategory', authenticate, createCategory);
+router.put('/admin/updatecategoryById/:id', authenticate, updateCategory);
+router.delete('/admin/deletecategoryById/:id', authenticate, deleteCategory);
 export default router;

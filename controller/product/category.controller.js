@@ -90,9 +90,7 @@ export const getAllCategories = async (req, res) => {
 // Public: Get Total Category Count
 export const getCategoryCount = async (req, res) => {
   try {
-    const total = await Category.count({
-      where: { parent_id: null },
-    });
+    const total = await Category.count();
 
     const response = {
       intResponse: total,
@@ -108,9 +106,7 @@ export const getCategoryCount = async (req, res) => {
 // Public: Get Category By ID with Subcategories
 export const getCategoryById = async (req, res) => {
   try {
-    const category = await Category.findByPk(req.params.id, {
-      include: [{ model: Category, as: 'subcategories' }],
-    });
+    const category = await Category.findByPk(req.params.id);
     if (!category) return sendError(res, 'Category not found', 404);
     return sendSuccess(res, category);
   } catch (err) {
