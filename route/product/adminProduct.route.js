@@ -1,11 +1,13 @@
-import express from 'express';
-import { createProduct, updateProduct, deleteProduct,getProductCount } from '../../controller/product/product.controller.js';
+import express from "express";
+import { createProduct, updateProduct, deleteProduct } from "../../controller/product/product.controller.js";
+import authenticate from "../../middlewares/auth/auth.js";
+import { upload } from "../../Helper/multer.helper.js";
 
 const router = express.Router();
-import authenticate from '../../middlewares/auth/auth.js';
-// Admin-only routes
-router.post('/', authenticate, createProduct);
-router.put('/:id', authenticate, updateProduct);
-router.delete('/:id', authenticate, deleteProduct);
+
+// Admin
+router.post("/", authenticate, (req, res, next) => { req.uploadFolder = "products"; next(); }, upload.array("images", 10), createProduct);
+router.put("/:id", authenticate, (req, res, next) => { req.uploadFolder = "products"; next(); }, upload.array("images", 10), updateProduct);
+router.delete("/:id", authenticate, deleteProduct);
 
 export default router;

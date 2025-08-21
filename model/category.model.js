@@ -19,7 +19,7 @@ const createCategoryModel = (sequelize) => {
         allowNull: true,
       },
       category_icon: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING, // stores file path as string
         allowNull: true,
       },
       slider: {
