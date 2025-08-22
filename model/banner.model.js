@@ -1,7 +1,7 @@
-import { DataTypes } from 'sequelize';
+import { DataTypes } from "sequelize";
 
 const createBannerModel = (sequelize) => {
-  const Banner = sequelize.define('Banner', {
+  const Banner = sequelize.define("Banner", {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
@@ -15,10 +15,9 @@ const createBannerModel = (sequelize) => {
       type: DataTypes.TEXT,
       allowNull: true,
     },
-
-    imageBase64: {
-      type: DataTypes.TEXT, // for storing base64 string
-      allowNull: false,
+    imagePath: {
+      type: DataTypes.STRING, // store path only
+      allowNull: true,
     },
     link: {
       type: DataTypes.STRING,
@@ -28,8 +27,8 @@ const createBannerModel = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
-      bannerType: {
-      type: DataTypes.ENUM("Slider", "ShortAdd", "LongAdd", "Sales","Voucher"),
+    bannerType: {
+      type: DataTypes.ENUM("Slider", "ShortAdd", "LongAdd", "Sales", "Voucher"),
       allowNull: false,
       defaultValue: "Slider",
     },
@@ -47,11 +46,9 @@ const createBannerModel = (sequelize) => {
     },
   }, {
     timestamps: true,
-    createdAt: 'createdOnUTC',
-    updatedAt: 'lastModifiedOnUTC',
-    indexes: [
-      { fields: ['bannerType'] },
-    ],
+    createdAt: "createdOnUTC",
+    updatedAt: "lastModifiedOnUTC",
+    indexes: [{ fields: ["bannerType"] }],
   });
 
   return Banner;

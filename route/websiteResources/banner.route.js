@@ -1,24 +1,29 @@
-import express from 'express';
+import express from "express";
+import multer from "multer";
 import {
   createBanner,
   getAllBanners,
+  getAllBannersByPagination,
   getBannerById,
   getBannersByType,
   updateBanner,
   deleteBanner,
-    getTotalBannerCount
-} from '../../controller/website-resources/banner.controller.js';
+  getTotalBannerCount,
+} from "../../controller/website-resources/banner.controller.js";
 import { authenticateToken } from "../../middlewares/auth/auth.js";
+import { upload } from "../../Helper/multer.helper.js";
 
 const router = express.Router();
 
-// Middleware: Protected Routes
-router.post('/create', authenticateToken, createBanner);
-router.get('/getall', getAllBanners);
-router.get('/getbyid/:id', getBannerById);
-router.get('/getbytype/:type', getBannersByType);
-router.put('/update/:id', authenticateToken, updateBanner);
-router.delete('/delete/:id', authenticateToken, deleteBanner);
-router.get('/count',authenticateToken, getTotalBannerCount);
+
+// ✅ Routes
+router.post("/create", authenticateToken, (req, res, next) => { req.uploadFolder = "Banners"; next(); }, upload.single("image"), createBanner);
+router.get("/count", authenticateToken, getTotalBannerCount);
+router.get("/getall", getAllBanners);
+router.get("/getall/paginated", getAllBannersByPagination);
+router.get("/getbyid/:id", getBannerById);
+router.get("/getbytype/:type", getBannersByType);
+router.put("/update/:id", authenticateToken, upload.single("image"), updateBanner);
+router.delete("/delete/:id", authenticateToken, deleteBanner);
 
 export default router;

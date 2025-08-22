@@ -1,106 +1,168 @@
 import { Banner } from "../../db/dbconnection.js";
 import { sendSuccess, sendError } from "../../Helper/response.helper.js";
+import { convertImageToBase64, deleteFileSafe } from "../../Helper/multer.helper.js";
+import path from "path";  // ✅ make sure this is at the top
 
-// CREATE Banner (Admin Only)
 export const createBanner = async (req, res) => {
   try {
-    const { reqData } = req.body;
+    if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
 
-    // Optional: Check user role if needed here
-    if (req.user?.role !== 'superAdmin') return sendError(res, "Unauthorized", 403);
+    const reqData = req.body.reqData ? JSON.parse(req.body.reqData) : {};
+    reqData.createdBy = req.user.id;
 
-    const newBanner = await Banner.create({
-      ...reqData,
-      createdBy: req.user?.id || null,
-    });
+    const banner = await Banner.create(reqData);
 
-    return sendSuccess(res, newBanner, 201);
-  } catch (error) {
-    return sendError(res, error.message);
+    if (req.file) {
+      banner.imagePath = req.file.path; // multer gives full path
+      await banner.save();
+    }
+
+    const result = banner.toJSON();
+    result.imagePath_base64 = result.imagePath
+      ? convertImageToBase64(result.imagePath)
+      : null;
+
+    return sendSuccess(res, result, 201);
+  } catch (err) {
+    console.error("❌ CREATE BANNER ERROR:", err);
+    return sendError(res, err.message);
   }
 };
 
+
+
+
+
+// ✅ UPDATE BANNER
 export const updateBanner = async (req, res) => {
   try {
-    const { reqData } = req.body;
+    if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
+
+    const reqData = req.body.reqData ? JSON.parse(req.body.reqData) : {};
+    reqData.lastModifiedBy = req.user.id;
 
     const banner = await Banner.findByPk(req.params.id);
     if (!banner) return sendError(res, "Banner not found", 404);
 
-    await banner.update({
-      ...reqData,
-      lastModifiedBy: req.user?.id || null,
-    });
+    await banner.update(reqData);
 
-    return sendSuccess(res, banner);
-  } catch (error) {
-    return sendError(res, error.message);
+    if (req.file) {
+      deleteFileSafe(banner.imagePath);
+      banner.imagePath = req.file.path;
+      await banner.save();
+    }
+
+    const result = banner.toJSON();
+    result.image_base64 = result.imagePath ? convertImageToBase64(result.imagePath) : null;
+
+    return sendSuccess(res, result);
+  } catch (err) {
+    console.error("❌ UPDATE BANNER ERROR:", err);
+    return sendError(res, err.message);
   }
 };
 
-// GET All Banners with Pagination
+// ✅ GET ALL BANNERS
 export const getAllBanners = async (req, res) => {
   try {
-    const skip = parseInt(req.query.skip) || 0;
-    const top = parseInt(req.query.top) || 10;
+    const banners = await Banner.findAll();
+
+    const result = banners.map(b => {
+      const obj = b.toJSON();
+      obj.image_base64 = obj.imagePath ? convertImageToBase64(obj.imagePath) : null;
+      return obj;
+    });
+
+    return sendSuccess(res, result);
+  } catch (err) {
+    console.error("❌ GET ALL BANNERS ERROR:", err);
+    return sendError(res, err.message);
+  }
+};
+
+// ✅ GET ALL BANNERS WITH PAGINATION
+export const getAllBannersByPagination = async (req, res) => {
+  try {
+    const skip = parseInt(req.query.skip, 10) || 0;
+    const top = parseInt(req.query.top, 10) || 10;
 
     const banners = await Banner.findAll({ offset: skip, limit: top });
-    return sendSuccess(res, banners);
-  } catch (error) {
-    return sendError(res, error.message);
+
+    const result = banners.map(b => {
+      const obj = b.toJSON();
+      obj.image_base64 = obj.imagePath ? convertImageToBase64(obj.imagePath) : null;
+      return obj;
+    });
+
+    return sendSuccess(res, result);
+  } catch (err) {
+    console.error("❌ PAGINATED BANNER FETCH ERROR:", err);
+    return sendError(res, err.message);
   }
 };
 
-// GET Total Banner Count
+// ✅ GET TOTAL COUNT
 export const getTotalBannerCount = async (req, res) => {
   try {
-    const count = await Banner.count();
-    return sendSuccess(res, count); // send as number
-  } catch (error) {
-    return sendError(res, error.message);
+    const total = await Banner.count();
+    return sendSuccess(res, { intResponse: total, responseMessage: "Total banner count fetched successfully" });
+  } catch (err) {
+    console.error("❌ GET BANNER COUNT ERROR:", err);
+    return sendError(res, err.message);
   }
 };
 
-
-// GET Banner by ID
+// ✅ GET BANNER BY ID
 export const getBannerById = async (req, res) => {
   try {
     const banner = await Banner.findByPk(req.params.id);
     if (!banner) return sendError(res, "Banner not found", 404);
 
-    return sendSuccess(res, banner);
-  } catch (error) {
-    return sendError(res, error.message);
+    const result = banner.toJSON();
+    result.image_base64 = result.imagePath ? convertImageToBase64(result.imagePath) : null;
+
+    return sendSuccess(res, result);
+  } catch (err) {
+    console.error("❌ GET BANNER BY ID ERROR:", err);
+    return sendError(res, err.message);
   }
 };
 
-// GET Banners by Type
+// ✅ GET BANNERS BY TYPE
 export const getBannersByType = async (req, res) => {
   try {
     const { type } = req.params;
 
     const banners = await Banner.findAll({ where: { bannerType: type } });
-    if (!banners || banners.length === 0)
-      return sendError(res, "No banners found for this type", 404);
+    if (!banners.length) return sendError(res, "No banners found for this type", 404);
 
-    return sendSuccess(res, banners);
-  } catch (error) {
-    return sendError(res, error.message);
+    const result = banners.map(b => {
+      const obj = b.toJSON();
+      obj.image_base64 = obj.imagePath ? convertImageToBase64(obj.imagePath) : null;
+      return obj;
+    });
+
+    return sendSuccess(res, result);
+  } catch (err) {
+    console.error("❌ GET BANNERS BY TYPE ERROR:", err);
+    return sendError(res, err.message);
   }
 };
 
-// UPDATE Banner
-
-
-// DELETE Banner
+// ✅ DELETE BANNER
 export const deleteBanner = async (req, res) => {
   try {
-    const banner = await Banner.findByPk(req.params.id);
-    if (!banner) return sendError(res, false, 404); // false if banner not found
+    if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
 
-    await banner.destroy();
-    return sendSuccess(res, true); // true on successful delete
-  } catch (error) {
-    return sendError(res, false); // false on error
+    const banner = await Banner.findByPk(req.params.id);
+    if (!banner) return sendError(res, "Banner not found", 404);
+
+    deleteFileSafe(banner.imagePath);
+    await Banner.destroy({ where: { id: req.params.id } });
+
+    return sendSuccess(res, null);
+  } catch (err) {
+    console.error("❌ DELETE BANNER ERROR:", err);
+    return sendError(res, err.message);
   }
 };
