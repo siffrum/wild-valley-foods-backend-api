@@ -5,8 +5,8 @@ const router = express.Router();
 
 // Public
 router.get("/", getAllProducts);
-router.get("/:id", getProductById);
 router.get("/odata/list", getAllProductsByOdata);
-router.get("/count", getProductCount);
+router.get("/count", getProductCount);   // 👈 put before :id
+router.get("/:id", getProductById);
 
 export default router;
