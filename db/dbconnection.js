@@ -12,7 +12,7 @@ import createProductModel from "../model/product.model.js";
 import createImageModel from "../model/image.model.js";
 import userDetailModel from "../model/userDetail.model.js";        // ✅ new
 import userAddressModel from "../model/userAddress.model.js";
-import createProductPaymentModel from "../model/productPayment.model.js"; // ✅ new
+import createProductPaymentModel from "../model/productpayment.model.js"; // ✅ new
 
 // Variables
 let User = null;
