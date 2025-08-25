@@ -82,5 +82,4 @@ export {
   UserDetail,       // ✅ export
   UserAddress,
   ProductPayment,   // ✅ export
-  UserAddress,
 };
