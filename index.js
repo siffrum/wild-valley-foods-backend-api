@@ -10,17 +10,16 @@ import moduleRouter from "./route/License/module.route.js";
 import bannerRoute from "./route/websiteResources/banner.route.js";
 import category from "./route/product/category.route.js";
 import product from "./route/product/product.route.js";
-import adminProduct from './route/product/adminProduct.route.js';
-import bodyParser from 'body-parser';
+import adminProduct from "./route/product/adminProduct.route.js";
 // import razorpay from "razorpay";
 import fs from "fs";
 import https from "https";
-// import express from "express";
-const app = express();
-// Increase the body size limit (50MB is safe for base64 images)
-app.use(bodyParser.json({ limit: '50mb' }));
-app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
+const app = express();
+
+// ✅ Use built-in Express body parsers (no body-parser)
+app.use(express.json({ limit: "50mb", strict: false })); // strict:false lets "null" pass if sent
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 app.use(
   cors({
@@ -30,31 +29,29 @@ app.use(
     allowedHeaders: "*",
   })
 );
+
 // Middleware
-app.use(express.json());
-
 app.use(cookie());
-//Routes
-app.use(process.env.BASE_URL, router);
 
+// Routes
+app.use(process.env.BASE_URL, router);
 app.use(`${process.env.BASE_URL}/license`, licenseRouter);
 app.use(`${process.env.BASE_URL}/module`, moduleRouter);
 app.use(`${process.env.BASE_URL}/banner`, bannerRoute);
 app.use(`${process.env.BASE_URL}`, category);
-app.use(`${process.env.BASE_URL}/product`, product);         // public routes
+app.use(`${process.env.BASE_URL}/product`, product); // public routes
 app.use(`${process.env.BASE_URL}/admin/product`, adminProduct); // admin routes
 
-
-//Local  Database connection
+// Local Database connection
 // dbConnection(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS);
 
 // Production database connection
 dbConnection();
+
 // const razorpay = new Razorpay({
 //   key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_R99agg2nuIaA5n",
 //   key_secret: process.env.RAZORPAY_KEY_SECRET || "NQHte2R5i5nVFQlA1HliCF0r"
 // });
-
 
 // // Route
 // app.post("/create-payment-link", async (req, res) => {
@@ -92,6 +89,7 @@ dbConnection();
 
 //   res.status(200).send('ok');
 // });
+
 // Start the server
 
 // const options = {
@@ -102,7 +100,7 @@ dbConnection();
 // https.createServer(options, app).listen(5000, () => {
 //   console.log("✅ HTTPS Server running at https://localhost:5000");
 // });
+
 app.listen(process.env.PORT, () => {
   console.log(`Server is running at port ${process.env.PORT}`);
 });
-
