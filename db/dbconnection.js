@@ -80,6 +80,6 @@ export {
   Image,
   Product,
   UserDetail,       // ✅ export
-  ProductPayment,   // ✅ export
   UserAddress,
+  ProductPayment,   // ✅ export
 };
