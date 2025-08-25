@@ -17,6 +17,14 @@ const createProductModel = (sequelize) => {
       type: DataTypes.TEXT,
       allowNull: true,
     },
+       richDescription: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    itemId:{
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     price: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
@@ -43,10 +51,15 @@ const createProductModel = (sequelize) => {
       type: DataTypes.JSONB,
       allowNull: true,
     },
-    razorpayOrderId: {
-      type: DataTypes.STRING,
-      allowNull: true,
+     currency: {
+        type: DataTypes.STRING,// default INR
+        allowNull: true,
+        defaultValue: "INR",
     },
+    // razorpayOrderId: {
+    //   type: DataTypes.STRING,
+    //   allowNull: true,
+    // },
     categoryId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -54,7 +67,7 @@ const createProductModel = (sequelize) => {
         model: 'Categories',
         key: 'id',
       },
-      onDelete: 'CASCADE',
+      // onDelete: 'CASCADE',
     },
     createdBy: {
       type: DataTypes.INTEGER,
@@ -73,7 +86,6 @@ const createProductModel = (sequelize) => {
       { fields: ['categoryId'] },
     ],
   });
-
   // Associations
   Product.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
   Category.hasMany(Product, { foreignKey: 'categoryId', as: 'products' });

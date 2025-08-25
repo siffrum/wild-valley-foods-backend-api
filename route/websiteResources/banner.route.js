@@ -1,5 +1,4 @@
 import express from "express";
-import multer from "multer";
 import {
   createBanner,
   getAllBanners,
@@ -18,7 +17,7 @@ const router = express.Router();
 
 // ✅ Routes
 router.post("/create", authenticateToken, (req, res, next) => { req.uploadFolder = "Banners"; next(); }, upload.single("image"), createBanner);
-router.get("/count", authenticateToken, getTotalBannerCount);
+router.get("/count", getTotalBannerCount);
 router.get("/getall", getAllBanners);
 router.get("/getall/paginated", getAllBannersByPagination);
 router.get("/getbyid/:id", getBannerById);
