@@ -60,7 +60,7 @@ let UserAddress = null;
     Image = await createImageModel(sequelize);
     UserDetail = await userDetailModel(sequelize);               // ✅ new
     ProductPayment = await createProductPaymentModel(sequelize); // ✅ new
-    UserAddress = await userAddressModel(sequelize);
+   UserAddress = await userAddressModel(sequelize);
     // Sync database
     await sequelize.sync({ alter: true });
 
@@ -82,4 +82,5 @@ export {
   UserDetail,       // ✅ export
   UserAddress,
   ProductPayment,   // ✅ export
+  UserAddress,
 };
