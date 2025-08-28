@@ -1,8 +1,8 @@
 import { DataTypes } from 'sequelize';
 
-const userDetailModel = (sequelize) => {
-  const UserDetail = sequelize.define(
-    'UserDetail',
+const customerDetailModel = (sequelize) => {
+  const CustomerDetail = sequelize.define(
+    'CustomerDetail',
     {
       id: {
         type: DataTypes.INTEGER,
@@ -53,10 +53,10 @@ const userDetailModel = (sequelize) => {
       timestamps: true,
       createdAt: 'createdOnUTC',
       updatedAt: 'lastModifiedOnUTC',
-      tableName: 'UserDetails', // ✅ keeps table name consistent
+      tableName: 'CustomerDetails', // ✅ keeps table name consistent
     }
   );
-  return UserDetail;
+  return CustomerDetail;
 };
 
-export default userDetailModel;
+export default customerDetailModel;

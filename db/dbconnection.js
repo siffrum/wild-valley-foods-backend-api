@@ -10,9 +10,9 @@ import createBannerModel from "../model/banner.model.js";
 import createCategoryModel from "../model/category.model.js";
 import createProductModel from "../model/product.model.js";
 import createImageModel from "../model/image.model.js";
-import userDetailModel from "../model/userDetail.model.js";        // ✅ new
-import userAddressModel from "../model/userAddress.model.js";
+import customerAddressDetailModel from "../model/customerAddressDetail.model.js";
 import createProductPaymentModel from "../model/productpayment.model.js"; // ✅ new
+import customerDetailModel from "../model/customerDetail.model.js";
 
 // Variables
 let User = null;
@@ -22,9 +22,9 @@ let Banner = null;
 let categories = null;
 let Product = null;
 let Image = null;
-let UserDetail = null;        // ✅ new
+let CustomerDetail = null;        // ✅ new
 let ProductPayment = null;    // ✅ new
-let UserAddress = null;
+let CustomerAddressDetail = null;
 
 // Local DB connection
 // export const dbConnection = async (database, username, password) => {
@@ -49,7 +49,6 @@ let UserAddress = null;
   
   try {
     await sequelize.authenticate();
-
     // Initialize models
     User = await createUserModel(sequelize);
     License = await createLicenseModel(sequelize);
@@ -58,9 +57,9 @@ let UserAddress = null;
     categories = await createCategoryModel(sequelize);
     Product = await createProductModel(sequelize);
     Image = await createImageModel(sequelize);
-    UserDetail = await userDetailModel(sequelize);               // ✅ new
+    CustomerDetail = await customerDetailModel(sequelize);               // ✅ new
     ProductPayment = await createProductPaymentModel(sequelize); // ✅ new
-   UserAddress = await userAddressModel(sequelize);
+   CustomerAddressDetail = await customerAddressDetailModel(sequelize);
     // Sync database
     await sequelize.sync({ alter: true });
 
@@ -79,7 +78,7 @@ export {
   categories,
   Image,
   Product,
-  UserDetail,       // ✅ export
-  UserAddress,
+  CustomerDetail,       // ✅ export
+  CustomerAddressDetail,
   ProductPayment,   // ✅ export
 };

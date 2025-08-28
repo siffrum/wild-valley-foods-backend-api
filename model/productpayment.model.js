@@ -2,7 +2,7 @@ import { DataTypes } from 'sequelize';
 
 const createProductPaymentModel = (sequelize) => {
   // FIX: use correct model name
-  const UserDetail = sequelize.models.UserDetail;
+  const CustomerDetail = sequelize.models.CustomerDetail;
 
   const ProductPayment = sequelize.define(
     'ProductPayment',
@@ -44,11 +44,11 @@ const createProductPaymentModel = (sequelize) => {
         type: DataTypes.DATE,
         allowNull: true,
       },
-      userDetailId: {
+      customerDetailId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "UserDetails", // ✅ still fine (table name, not model)
+          model: "CustomerDetails", // ✅ still fine (table name, not model)
           key: "id",
         },
         onDelete: "CASCADE",
@@ -87,21 +87,21 @@ const createProductPaymentModel = (sequelize) => {
       createdAt: 'createdOnUTC',
       updatedAt: 'lastModifiedOnUTC',
       indexes: [
-        { fields: ['userDetailId'] },
+        { fields: ['customerDetailId'] },
         { fields: ['razorpayOrderId'] },
       ],
     }
   );
 
   // ✅ Associations
-  if (UserDetail) {
-    ProductPayment.belongsTo(UserDetail, {
-      foreignKey: 'userDetailId',
-      as: 'userDetails',
+  if (CustomerDetail) {
+    ProductPayment.belongsTo(CustomerDetail, {
+      foreignKey: 'customerDetailId',
+      as: 'customerDetails',
     });
 
-    UserDetail.hasMany(ProductPayment, {
-      foreignKey: 'userDetailId',
+    CustomerDetail.hasMany(ProductPayment, {
+      foreignKey: 'customerDetailId',
       as: 'payments',
     });
   }

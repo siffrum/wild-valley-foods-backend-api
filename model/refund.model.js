@@ -36,11 +36,11 @@ const refundModel = (sequelize) => {
           key: "id",
         },
       },
-      userDetailId: {
+      customerDetailId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "UserDetail", // ✅ must match model name
+          model: "CustomerDetail", // ✅ must match model name
           key: "id",
         },
       },
@@ -88,7 +88,7 @@ Refund.belongsTo(ProductPayment, { foreignKey: "productPaymentId", as: "payment"
 Product.hasMany(Refund, { foreignKey: "productId", as: "refunds" });
 Refund.belongsTo(Product, { foreignKey: "productId", as: "product" });
 
-UserDetail.hasMany(Refund, { foreignKey: "userDetailId", as: "refunds" });
-Refund.belongsTo(UserDetail, { foreignKey: "userDetailId", as: "user" });
+CustomerDetail.hasMany(Refund, { foreignKey: "customerDetailId", as: "refunds" });
+Refund.belongsTo(CustomerDetail, { foreignKey: "customerDetailId", as: "user" });
 
 export default refundModel;

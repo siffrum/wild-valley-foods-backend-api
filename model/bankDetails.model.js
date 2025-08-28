@@ -2,7 +2,7 @@
 import { DataTypes } from "sequelize";
 
 const bankDetailsModel = (sequelize) => {
-  const UserDetail = sequelize.models.UserDetail;
+  const CustomerDetail = sequelize.models.CustomerDetail;
 
   const BankDetails = sequelize.define(
     "BankDetails",
@@ -12,11 +12,11 @@ const bankDetailsModel = (sequelize) => {
         autoIncrement: true,
         primaryKey: true,
       },
-      userDetailId: {
+      customerDetailId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "UserDetails",
+          model: "CustomerDetails",
           key: "id",
         },
         onDelete: "CASCADE",
@@ -63,14 +63,14 @@ const bankDetailsModel = (sequelize) => {
   );
 
   // ✅ Associations
-  if (UserDetail) {
-    UserDetail.hasMany(BankDetails, {
-      foreignKey: "userDetailId",
+  if (CustomerDetail) {
+    CustomerDetail.hasMany(BankDetails, {
+      foreignKey: "customerDetailId",
       as: "bankAccounts",
     });
-    BankDetails.belongsTo(UserDetail, {
-      foreignKey: "userDetailId",
-      as: "user",
+    BankDetails.belongsTo(CustomerDetail, {
+      foreignKey: "customerDetailId",
+      as: "customer",
     });
   }
 

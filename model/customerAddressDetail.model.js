@@ -1,21 +1,21 @@
 import { DataTypes } from "sequelize";
 
-const userAddressModel = (sequelize) => {
-  const UserDetail = sequelize.models.UserDetail; // ✅ get UserDetail model
+const customerAddressDetailModel = (sequelize) => {
+  const CustomerDetail = sequelize.models.CustomerDetail; // ✅ get CustomerDetail model
 
-  const UserAddress = sequelize.define(
-    "UserAddress",
+  const CustomerAddressDetail = sequelize.define(
+    "CustomerAddressDetail",
     {
       id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
       },
-      userDetailId: {
+      customerDetailId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "UserDetails", // must match table name
+          model: "CustomerDetails", // must match table name
           key: "id",
         },
         onDelete: "CASCADE", // ✅ delete addresses if user deleted
@@ -62,24 +62,24 @@ const userAddressModel = (sequelize) => {
       timestamps: true,
       createdAt: "createdOnUTC",
       updatedAt: "lastModifiedOnUTC",
-      tableName: "UserAddresses",
+      tableName: "CustomerAddressDetails",
     }
   );
 
   // ✅ Associations
-  if (UserDetail) {
-    UserDetail.hasMany(UserAddress, {
-      foreignKey: "userDetailId",
+  if (CustomerDetail) {
+    CustomerDetail.hasMany(CustomerAddressDetail, {
+      foreignKey: "customerDetailId",
       as: "addresses",
     });
 
-    UserAddress.belongsTo(UserDetail, {
-      foreignKey: "userDetailId",
-      as: "user",
+    CustomerAddressDetail.belongsTo(CustomerDetail, {
+      foreignKey: "customerDetailId",
+      as: "customer",
     });
   }
 
-  return UserAddress;
+  return CustomerAddressDetail;
 };
 
-export default userAddressModel;
+export default customerAddressDetailModel;
