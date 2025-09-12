@@ -7,25 +7,26 @@ import path from "path";  // ✅ make sure this is at the top
 export const createBanner = async (req, res) => {
   try {
     if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
+
     const reqData = req.body.reqData ? JSON.parse(req.body.reqData) : {};
     reqData.createdBy = req.user.id;
+    reqData.lastModifiedBy = req.user.id;
+
     const banner = await Banner.create(reqData);
+
     if (req.file) {
       banner.imagePath = req.file.path;
       await banner.save();
     }
+
     const result = banner.toJSON();
-    result.banner_base64 = result.image ? convertImageToBase64(result.image) : null;
+    result.image_base64 = result.imagePath ? convertImageToBase64(result.imagePath) : null;
     return sendSuccess(res, result, 201);
   } catch (err) {
     console.error("❌ CREATE BANNER ERROR:", err);
     return sendError(res, err.message);
   }
 };
-
-
-
-
 
 
 // ✅ UPDATE BANNER

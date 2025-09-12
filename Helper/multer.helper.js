@@ -40,10 +40,22 @@ export const upload = multer({
  */
 export const convertImageToBase64 = (filePath) => {
   try {
-    if (!filePath || !fs.existsSync(filePath)) return null;
-    const buffer = fs.readFileSync(filePath);
-    let ext = path.extname(filePath).substring(1).toLowerCase();
+    if (!filePath) return null;
+
+    // Ensure absolute path regardless of input
+    const absPath = path.isAbsolute(filePath)
+      ? filePath
+      : path.join(process.cwd(), filePath);
+
+    if (!fs.existsSync(absPath)) {
+      console.error("❌ File not found:", absPath);
+      return null;
+    }
+
+    const buffer = fs.readFileSync(absPath);
+    let ext = path.extname(absPath).substring(1).toLowerCase();
     if (ext === "jpg") ext = "jpeg";
+
     return `data:image/${ext};base64,${buffer.toString("base64")}`;
   } catch (err) {
     console.error("❌ Error converting image to base64:", err);

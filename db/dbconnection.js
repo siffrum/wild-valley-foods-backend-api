@@ -13,6 +13,7 @@ import createImageModel from "../model/image.model.js";
 import customerAddressDetailModel from "../model/customerAddressDetail.model.js";
 import createProductPaymentModel from "../model/productpayment.model.js"; // ✅ new
 import customerDetailModel from "../model/customerDetail.model.js";
+import ContactUsModel  from "../model/contactUs.model.js";  // contact us model
 
 // Variables
 let User = null;
@@ -25,6 +26,7 @@ let Image = null;
 let CustomerDetail = null;        // ✅ new
 let ProductPayment = null;    // ✅ new
 let CustomerAddressDetail = null;
+let ContactUs = null; // contact us model
 
 // Local DB connection
 // export const dbConnection = async (database, username, password) => {
@@ -35,7 +37,6 @@ let CustomerAddressDetail = null;
 
   // Production DB connection (commented)
   export const dbConnection = async () => {
-    console.log("DATABASE_URL:", process.env.DATABASE_URL);
     const sequelize = new Sequelize(process.env.DATABASE_URL, {
       dialect: "postgres",
       protocol: "postgres",
@@ -60,6 +61,7 @@ let CustomerAddressDetail = null;
     CustomerDetail = await customerDetailModel(sequelize);               // ✅ new
     ProductPayment = await createProductPaymentModel(sequelize); // ✅ new
    CustomerAddressDetail = await customerAddressDetailModel(sequelize);
+    ContactUs = await ContactUsModel(sequelize); // contact us model
     // Sync database
     await sequelize.sync({ alter: true });
 
@@ -81,4 +83,5 @@ export {
   CustomerDetail,       // ✅ export
   CustomerAddressDetail,
   ProductPayment,   // ✅ export
+  ContactUs // contact us model
 };

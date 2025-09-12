@@ -67,7 +67,7 @@ const createProductModel = (sequelize) => {
         model: 'Categories',
         key: 'id',
       },
-      // onDelete: 'CASCADE',
+      onDelete: 'CASCADE',
     },
     createdBy: {
       type: DataTypes.INTEGER,
@@ -87,8 +87,8 @@ const createProductModel = (sequelize) => {
     ],
   });
   // Associations
-  Product.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
-  Category.hasMany(Product, { foreignKey: 'categoryId', as: 'products' });
+  Product.belongsTo(Category, { foreignKey: 'categoryId', as: 'category',onDelete: 'CASCADE', });
+  Category.hasMany(Product, { foreignKey: 'categoryId', as: 'products',onDelete: 'CASCADE', });
 
   return Product;
 };

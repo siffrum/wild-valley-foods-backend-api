@@ -1,13 +1,70 @@
 import { Product, Image, categories as Category } from "../../db/dbconnection.js";
 import { sendSuccess, sendError } from "../../Helper/response.helper.js";
 import { convertImageToBase64, deleteFileSafe } from "../../Helper/multer.helper.js";
+import { Op } from "sequelize";
 
+// ✅ SEARCH PRODUCTS WITH ODATA
+
+export const searchProductsOdata = async (req, res) => {
+  try {
+    const keyword = req.query.q ? req.query.q.trim() : "";
+
+    // Require at least 3 characters
+    if (!keyword || keyword.length < 3) {
+      return sendError(res, "Please enter at least 3 characters", 400);
+    }
+
+    const skip = parseInt(req.query.$skip, 10) || 0;
+    const top = parseInt(req.query.$top, 10) || 10;
+
+    // 🔍 Search condition across product name & category
+    const whereCondition = {
+      [Op.or]: [
+        { name: { [Op.iLike]: `%${keyword}%` } },               // product name
+        { description: { [Op.iLike]: `%${keyword}%` } },        // product description if exists
+      ]
+    };
+
+    const { count: total, rows: items } = await Product.findAndCountAll({
+      where: whereCondition,
+      include: [
+        {
+          model: Category,
+          as: "category",
+          where: { name: { [Op.iLike]: `%${keyword}%` } }, // match category too
+          required: false
+        },
+        { model: Image, as: "images" }
+      ],
+      offset: skip,
+      limit: top,
+    });
+
+    // ✅ Convert images
+    const productsWithBase64 = items.map(prod => {
+      const obj = prod.toJSON();
+      obj.images = obj.images.map(img => convertImageToBase64(img.imagePath)).filter(Boolean);
+      return obj;
+    });
+
+    return sendSuccess(res, {
+      items: productsWithBase64,
+      total,
+      skip,
+      top
+    });
+  } catch (err) {
+    console.error("❌ SEARCH PRODUCTS ERROR:", err);
+    return sendError(res, err.message);
+  }
+};
 // ✅ CREATE PRODUCT
 export const createProduct = async (req, res) => {
   try {
     if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
     const reqData = req.body.reqData ? JSON.parse(req.body.reqData) : {};
     reqData.createdBy = req.user.id;
+    reqData.lastModifiedBy=req.user.id;
 
     const product = await Product.create(reqData);
 
@@ -98,7 +155,8 @@ export const updateProduct = async (req, res) => {
   try {
     if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
     const reqData = req.body.reqData ? JSON.parse(req.body.reqData) : {};
-    reqData.lastModifiedBy = req.user.id;
+    reqData.createdBy = req.user.id;
+    reqData.lastModifiedBy=req.user.id;
 
     const product = await Product.findByPk(req.params.id);
     if (!product) return sendError(res, "Product not found", 404);

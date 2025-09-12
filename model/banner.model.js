@@ -15,10 +15,6 @@ const createBannerModel = (sequelize) => {
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    image:{
-      type: DataTypes.STRING, // stores file path as string
-      allowNull: true,
-    },
     imagePath: {
       type: DataTypes.STRING, // store path only
       allowNull: true,

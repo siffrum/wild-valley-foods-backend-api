@@ -1,13 +1,15 @@
-import { categories as Category } from "../../db/dbconnection.js";
+// import { categories as Category } from "../../db/dbconnection.js";
+import { Product, Image, categories as Category } from "../../db/dbconnection.js";
 import { sendSuccess, sendError } from "../../Helper/response.helper.js";
 import { convertImageToBase64, deleteFileSafe } from "../../Helper/multer.helper.js";
-
+// import Image from "../../model/image.model.js";
 // ✅ CREATE CATEGORY
 export const createCategory = async (req, res) => {
   try {
     if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
     const reqData = req.body.reqData ? JSON.parse(req.body.reqData) : {};
     reqData.createdBy = req.user.id;
+    reqData.lastModifiedBy=req.user.id;
 
     const category = await Category.create(reqData);
 
@@ -24,7 +26,33 @@ export const createCategory = async (req, res) => {
     return sendError(res, err.message);
   }
 };
+// ✅ UPDATE CATEGORY
+export const updateCategory = async (req, res) => {
+  try {
+    if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
+    const reqData = req.body.reqData ? JSON.parse(req.body.reqData) : {};
+    reqData.createdBy = req.user.id;
+    reqData.lastModifiedBy=req.user.id;
 
+    const category = await Category.findByPk(req.params.id);
+    if (!category) return sendError(res, "Category not found", 404);
+
+    await category.update(reqData);
+
+    if (req.file) {
+      deleteFileSafe(category.category_icon);
+      category.category_icon = req.file.path;
+      await category.save();
+    }
+
+    const result = category.toJSON();
+    result.category_icon_base64 = result.category_icon ? convertImageToBase64(result.category_icon) : null;
+    return sendSuccess(res, result);
+  } catch (err) {
+    console.error("❌ UPDATE CATEGORY ERROR:", err);
+    return sendError(res, err.message);
+  }
+};
 // ✅ GET ALL CATEGORIES PAGINATED
 export const getAllCategoriesPaginated = async (req, res) => {
   try {
@@ -99,45 +127,55 @@ export const getCategoryCount = async (req, res) => {
   }
 };
 
-// ✅ UPDATE CATEGORY
-export const updateCategory = async (req, res) => {
-  try {
-    if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
-    const reqData = req.body.reqData ? JSON.parse(req.body.reqData) : {};
-    reqData.lastModifiedBy = req.user.id;
 
-    const category = await Category.findByPk(req.params.id);
-    if (!category) return sendError(res, "Category not found", 404);
-
-    await category.update(reqData);
-
-    if (req.file) {
-      deleteFileSafe(category.category_icon);
-      category.category_icon = req.file.path;
-      await category.save();
-    }
-
-    const result = category.toJSON();
-    result.category_icon_base64 = result.category_icon ? convertImageToBase64(result.category_icon) : null;
-    return sendSuccess(res, result);
-  } catch (err) {
-    console.error("❌ UPDATE CATEGORY ERROR:", err);
-    return sendError(res, err.message);
-  }
-};
 
 // ✅ DELETE CATEGORY
+// export const deleteCategory = async (req, res) => {
+//   try {
+//     if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
+//     const category = await Category.findByPk(req.params.id);
+//     if (!category) return sendError(res, "Category not found", 404);
+
+//     deleteFileSafe(category.category_icon);
+//     await Category.destroy({ where: { id: req.params.id } });
+//     return sendSuccess(res, null);
+//   } catch (err) {
+//     console.error("❌ DELETE CATEGORY ERROR:", err);
+//     return sendError(res, err.message);
+//   }
+// };
+
+// ✅ DELETE CATEGORY (auto delete products too)
 export const deleteCategory = async (req, res) => {
   try {
     if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
-    const category = await Category.findByPk(req.params.id);
+
+    const category = await Category.findByPk(req.params.id, { include: "products" });
     if (!category) return sendError(res, "Category not found", 404);
 
+    // 🔹 Delete products and their images first
+    for (const product of category.products) {
+      const images = await Image.findAll({ where: { productId: product.id } });
+      for (const img of images) deleteFileSafe(img.imagePath);
+
+      await Image.destroy({ where: { productId: product.id } });
+      await Product.destroy({ where: { id: product.id } });
+    }
+
+    // 🔹 Delete category icon
     deleteFileSafe(category.category_icon);
+
+    // 🔹 Delete the category itself
     await Category.destroy({ where: { id: req.params.id } });
-    return sendSuccess(res, null);
+
+    return  sendSuccess(res, {
+      boolResponse: true,
+      responseMessage: `Category "${category.name}" and its products were deleted successfully.`
+    });;
   } catch (err) {
     console.error("❌ DELETE CATEGORY ERROR:", err);
     return sendError(res, err.message);
   }
 };
+
+

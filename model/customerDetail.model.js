@@ -1,28 +1,13 @@
-import { DataTypes } from 'sequelize';
+import { DataTypes } from "sequelize";
 
 const customerDetailModel = (sequelize) => {
   const CustomerDetail = sequelize.define(
-    'CustomerDetail',
+    "CustomerDetail",
     {
       id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
-      },
-      email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-        validate: { isEmail: true },
-      },
-      password: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      role: {
-        type: DataTypes.ENUM('Admin', 'endUser'),
-        allowNull: false,
-        defaultValue: 'endUser',
       },
       firstName: {
         type: DataTypes.STRING,
@@ -32,13 +17,24 @@ const customerDetailModel = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+        validate: { isEmail: true },
+      },
       contact: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      customerId: {
+      razorpayCustomerId: {   // ✅ Razorpay Customer ID
         type: DataTypes.STRING,
         allowNull: true,
+      },
+      role: {
+        type: DataTypes.ENUM("Admin", "endUser"),
+        allowNull: false,
+        defaultValue: "endUser",
       },
       createdBy: {
         type: DataTypes.INTEGER,
@@ -51,9 +47,9 @@ const customerDetailModel = (sequelize) => {
     },
     {
       timestamps: true,
-      createdAt: 'createdOnUTC',
-      updatedAt: 'lastModifiedOnUTC',
-      tableName: 'CustomerDetails', // ✅ keeps table name consistent
+      createdAt: "createdOnUTC",
+      updatedAt: "lastModifiedOnUTC",
+      tableName: "CustomerDetails",
     }
   );
   return CustomerDetail;

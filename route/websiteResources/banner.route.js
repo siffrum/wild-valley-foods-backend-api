@@ -16,7 +16,7 @@ const router = express.Router();
 
 
 // ✅ Routes
-router.post("/create", authenticateToken, (req, res, next) => { req.uploadFolder = "Banners"; next(); }, upload.single("image"), createBanner);
+router.post("/create", authenticateToken, (req, res, next) => { req.uploadFolder = "Banners"; next(); }, upload.single("imagePath"), createBanner);
 router.get("/count", getTotalBannerCount);
 router.get("/getall", getAllBanners);
 router.get("/getall/paginated", getAllBannersByPagination);
