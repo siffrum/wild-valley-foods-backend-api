@@ -9,87 +9,44 @@ const createProductModel = (sequelize) => {
       autoIncrement: true,
       primaryKey: true,
     },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-       richDescription: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
-    itemId:{
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    price: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
-    },
-    sku: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    stock: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0,
-    },
-    weight: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-    },
-    shippingOptions: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    paymentOptions: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-     currency: {
-        type: DataTypes.STRING,// default INR
-        allowNull: true,
-        defaultValue: "INR",
-    },
-    // razorpayOrderId: {
-    //   type: DataTypes.STRING,
-    //   allowNull: true,
-    // },
+    name: { type: DataTypes.STRING, allowNull: false },
+    description: { type: DataTypes.TEXT, allowNull: true },
+    richDescription: { type: DataTypes.STRING, allowNull: true },
+    itemId: { type: DataTypes.STRING, allowNull: true }, // our SKU/ID
+    price: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
+    sku: { type: DataTypes.STRING, allowNull: false, unique: true },
+    stock: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    weight: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
+    shippingOptions: { type: DataTypes.JSONB, allowNull: true },
+    paymentOptions: { type: DataTypes.JSONB, allowNull: true },
+    currency: { type: DataTypes.STRING, allowNull: true, defaultValue: "INR" },
+
+    // 🔹 Razorpay-specific
+    razorpayItemId: { type: DataTypes.STRING, allowNull: true },
+    hsnCode: { type: DataTypes.STRING, allowNull: true },
+    taxRate: { type: DataTypes.INTEGER, allowNull: true },
+    unit: { type: DataTypes.STRING, allowNull: true },
+
     categoryId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: 'Categories',
-        key: 'id',
-      },
+      references: { model: 'Categories', key: 'id' },
       onDelete: 'CASCADE',
     },
-    createdBy: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    lastModifiedBy: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
+    createdBy: { type: DataTypes.INTEGER, allowNull: false },
+    lastModifiedBy: { type: DataTypes.INTEGER, allowNull: true },
   }, {
     timestamps: true,
     createdAt: 'createdOnUTC',
     updatedAt: 'lastModifiedOnUTC',
-    indexes: [
-      { fields: ['sku'] },
-      { fields: ['categoryId'] },
-    ],
+    indexes: [{ fields: ['sku'] }, { fields: ['categoryId'] }],
   });
+
   // Associations
-  Product.belongsTo(Category, { foreignKey: 'categoryId', as: 'category',onDelete: 'CASCADE', });
-  Category.hasMany(Product, { foreignKey: 'categoryId', as: 'products',onDelete: 'CASCADE', });
+  Product.belongsTo(Category, { foreignKey: 'categoryId', as: 'category', onDelete: 'CASCADE' });
+  Category.hasMany(Product, { foreignKey: 'categoryId', as: 'products', onDelete: 'CASCADE' });
 
   return Product;
 };
+
 export default createProductModel;
