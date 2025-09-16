@@ -6,8 +6,8 @@ import { upload } from "../../Helper/multer.helper.js";
 const router = express.Router();
 
 // Admin
-router.post("/", authenticate, (req, res, next) => { req.uploadFolder = "products"; next(); }, upload.array("images", 10), createProduct);
-router.put("/:id", authenticate, (req, res, next) => { req.uploadFolder = "products"; next(); }, upload.array("images", 10), updateProduct);
-router.delete("/:id", authenticate, deleteProduct);
+router.post("/createproduct", authenticate, (req, res, next) => { req.uploadFolder = "products"; next(); }, upload.array("images", 10), createProduct);
+router.put("/updateproductById/:id", authenticate, (req, res, next) => { req.uploadFolder = "products"; next(); }, upload.array("images", 10), updateProduct);
+router.delete("/deleteproductById/:id", authenticate, deleteProduct);
 
 export default router;

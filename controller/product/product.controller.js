@@ -139,7 +139,8 @@ export const getAllProductsByOdata = async (req, res) => {
       return obj;
     });
 
-    return sendSuccess(res, { items: productsWithBase64, total, skip, top });
+    // return sendSuccess(res, { items: productsWithBase64, total, skip, top });
+    return sendSuccess(res, productsWithBase64);
   } catch (err) {
     console.error("❌ ODATA PRODUCTS ERROR:", err);
     return sendError(res, err.message);
