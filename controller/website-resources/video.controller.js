@@ -57,19 +57,14 @@ export const getPaginatedVideos = async (req, res) => {
     const skip = parseInt(req.query.skip, 10) || 0;
     const top = parseInt(req.query.top, 10) || 10;
 
-    const { count: total, rows: items } = await Video.findAndCountAll({
+     const videos = await Video.findAll({
       offset: skip,
       limit: top,
       order: [["createdOnUTC", "DESC"]],
     });
 
-    return sendSuccess(res, {
-      items,
-      intResponse: total,
-      responseMessage: "Videos fetched successfully",
-      skip,
-      top,
-    });
+    const result = videos.map((c) => c.toJSON());
+    return sendSuccess(res, result);
   } catch (err) {
     console.error("❌ GET PAGINATED VIDEOS ERROR:", err);
     return sendError(res, err.message);

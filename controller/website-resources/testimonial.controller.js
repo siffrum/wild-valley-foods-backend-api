@@ -56,19 +56,28 @@ export const getAllTestimonials = async (req, res) => {
     const skip = parseInt(req.query.skip, 10) || 0;
     const top = parseInt(req.query.top, 10) || 10;
 
-    const { count: total, rows: items } = await Testimonial.findAndCountAll({
+    // const { count: total, rows: items } = await Testimonial.findAndCountAll({
+    //   offset: skip,
+    //   limit: top,
+    //   order: [["createdOnUTC", "DESC"]],
+    // });
+
+    // return sendSuccess(res, {
+    //   items,
+    //   intResponse: total,
+    //   responseMessage: "Testimonials fetched successfully",
+    //   skip,
+    //   top,
+    // });
+
+      const testimonials = await Testimonial.findAll({
       offset: skip,
       limit: top,
       order: [["createdOnUTC", "DESC"]],
     });
 
-    return sendSuccess(res, {
-      items,
-      intResponse: total,
-      responseMessage: "Testimonials fetched successfully",
-      skip,
-      top,
-    });
+    const result = testimonials.map((c) => c.toJSON());
+    return sendSuccess(res, result);
   } catch (err) {
     console.error("❌ GET ALL TESTIMONIALS ERROR:", err);
     return sendError(res, err.message);

@@ -13,21 +13,21 @@ const createReviewModel = (sequelize) => {
       },
       name: {
         type: DataTypes.STRING,
-        allowNull: false, // customer/admin name
+        allowNull: false,
       },
       email: {
         type: DataTypes.STRING,
-        allowNull: false, // customer/admin email
+        allowNull: false,
         validate: { isEmail: true },
       },
       rating: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        validate: { min: 1, max: 5 }, // 1 to 5 stars
+        validate: { min: 1, max: 5 },
       },
       comment: {
         type: DataTypes.TEXT,
-        allowNull: false, // customer/admin comment
+        allowNull: false,
       },
       productId: {
         type: DataTypes.INTEGER,
@@ -37,7 +37,7 @@ const createReviewModel = (sequelize) => {
       },
       createdBy: {
         type: DataTypes.INTEGER,
-        allowNull: true, // optional for admin
+        allowNull: true,
       },
       lastModifiedBy: {
         type: DataTypes.INTEGER,

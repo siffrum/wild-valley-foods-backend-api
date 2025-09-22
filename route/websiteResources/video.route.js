@@ -14,13 +14,13 @@ const router = express.Router();
 
 // Public
 router.get("/", getAllVideos);                // all videos
-router.get("/paginated", getPaginatedVideos); // paginated
+router.get("/getall/paginated", getPaginatedVideos); // paginated
 router.get("/count", getVideoCount);          // count
-router.get("/:id", getVideoById);
+router.get("/getbyid/:id", getVideoById);
 
 // Admin / CRUD
-router.post("/",authenticate, createVideo);
-router.put("/:id",authenticate, updateVideo);
-router.delete("/:id",authenticate, deleteVideo);
+router.post("/create",authenticate, createVideo);
+router.put("/update/:id",authenticate, updateVideo);
+router.delete("/delete/:id",authenticate, deleteVideo);
 
 export default router;

@@ -19,13 +19,19 @@ const createVideoModel = (sequelize) => {
         validate: {
           isUrl: true,
         },
-         description: {
-        type: DataTypes.STRING,
+      },
+      description: {
+        type: DataTypes.TEXT,
         allowNull: true,
       },
+      createdBy: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
-      createdBy: { type: DataTypes.INTEGER, allowNull: true },
-      lastModifiedBy: { type: DataTypes.INTEGER, allowNull: true },
+      lastModifiedBy: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
     },
     {
       timestamps: true,
@@ -36,5 +42,6 @@ const createVideoModel = (sequelize) => {
 
   return Video;
 };
+
 
 export default createVideoModel;
