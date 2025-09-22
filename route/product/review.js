@@ -4,15 +4,16 @@ import {
   getReviewById,
   createReviewForProduct,
   getPaginatedReviewsForProduct,
-  getAverageRatingForProduct
+  getAverageRatingForProduct,getReviewCount
 } from "../../controller/product/review.controller.js";
 
 const router = express.Router();
 
 // Public
-router.get("/paginated", getAllReviews); // paginated
+router.get("/getall/paginated", getAllReviews); // paginated
+router.get("/count", getReviewCount); // total count of reviews
 router.get("/:id", getReviewById);
-router.get("/GetAllProductreviewsByProductId/:productId", getPaginatedReviewsForProduct);
+router.get("/GetAllProductReviewsByProductId/:productId", getPaginatedReviewsForProduct);
 
 router.get("/product/average-rating/:productId", getAverageRatingForProduct);
 router.post("/CreateProductReviewByProductId/:productId", createReviewForProduct);

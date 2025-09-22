@@ -15,7 +15,6 @@ export const getAllReviews = async (req, res) => {
       limit: top,
       include: [
         { model: Product, as: "product" },
-        { model: User, as: "user", attributes: ["id", "name", "email"] },
       ],
       order: [["createdOnUTC", "DESC"]],
     });

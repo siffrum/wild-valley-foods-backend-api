@@ -10,13 +10,12 @@ import {
 const router = express.Router();
 
 // Public
-router.get("/paginated", getAllTestimonials);
+router.get("/getAll/paginated", getAllTestimonials);
 router.get("/count", getTestimonialCount);
-router.get("/:id", getTestimonialById);
-
+router.get("/getbyid/:id", getTestimonialById);
 // Create / Manage
 router.post("/create", createTestimonial);
-router.put("/:id", updateTestimonial);
-router.delete("/:id", deleteTestimonial);
+router.put("/update/:id", updateTestimonial);
+router.delete("/delete/:id", deleteTestimonial);
 
 export default router;
