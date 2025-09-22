@@ -58,6 +58,101 @@ export const searchProductsOdata = async (req, res) => {
     return sendError(res, err.message);
   }
 };
+
+// ✅ GET PRODUCTS BY CATEGORY ID
+// ✅ GET PRODUCTS BY CATEGORY ID (with pagination)
+export const getProductsByCategoryId = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    if (!categoryId) {
+      return sendError(res, "Category ID is required", 400);
+    }
+
+    const skip = parseInt(req.query.skip, 10) || 0;
+    const top = parseInt(req.query.top, 10) || 10;
+
+    const { count: total, rows: items } = await Product.findAndCountAll({
+      where: { categoryId },
+      offset: skip,
+      limit: top,
+      include: [
+        { model: Category, as: "category" },
+        { model: Image, as: "images" },
+      ],
+    });
+
+    if (!items.length) {
+      return sendError(res, "No products found for this category", 404);
+    }
+
+    const productsWithBase64 = items.map((prod) => {
+      const obj = prod.toJSON();
+      obj.images = obj.images
+        .map((img) => convertImageToBase64(img.imagePath))
+        .filter(Boolean);
+      return obj;
+    });
+
+    return sendSuccess(res, {
+      items: productsWithBase64,
+      total,
+      skip,
+      top,
+    });
+  } catch (err) {
+    console.error("❌ GET PRODUCTS BY CATEGORY ERROR:", err);
+    return sendError(res, err.message);
+  }
+};
+
+// ✅ GET PRODUCT COUNT BY CATEGORY ID
+export const getProductCountByCategoryId = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    if (!categoryId) {
+      return sendError(res, "Category ID is required", 400);
+    }
+
+    const count = await Product.count({
+      where: { categoryId },
+    });
+
+    return sendSuccess(res, { categoryId, total: count });
+  } catch (err) {
+    console.error("❌ GET PRODUCT COUNT BY CATEGORY ERROR:", err);
+    return sendError(res, err.message);
+  }
+};
+
+// ✅ GET NEW ARRIVAL PRODUCTS (Last 10 Added)
+export const getNewArrivalProducts = async (req, res) => {
+  try {
+    const products = await Product.findAll({
+      order: [["createdOnUTC", "DESC"]], // newest first
+      limit: 10,
+      include: [
+        { model: Category, as: "category" },
+        { model: Image, as: "images" },
+      ],
+    });
+
+    const result = products.map((prod) => {
+      const obj = prod.toJSON();
+      obj.images = obj.images
+        .map((img) => convertImageToBase64(img.imagePath))
+        .filter(Boolean);
+      return obj;
+    });
+
+    return sendSuccess(res, result);
+  } catch (err) {
+    console.error("❌ GET NEW ARRIVALS ERROR:", err);
+    return sendError(res, err.message);
+  }
+};
+
 // ✅ CREATE PRODUCT
 export const createProduct = async (req, res) => {
   try {

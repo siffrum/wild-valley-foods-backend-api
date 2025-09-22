@@ -14,6 +14,9 @@ import customerAddressDetailModel from "../model/customerAddressDetail.model.js"
 import createProductPaymentModel from "../model/productpayment.model.js"; // ✅ new
 import customerDetailModel from "../model/customerDetail.model.js";
 import ContactUsModel  from "../model/contactUs.model.js";  // contact us model
+import createReviewModel from "../model/review.model.js";
+import createTestimonialModel from "../model/testmonials.model.js";
+import createVideoModel from "../model/video.model.js"; 
 
 // Variables
 let User = null;
@@ -27,26 +30,30 @@ let CustomerDetail = null;        // ✅ new
 let ProductPayment = null;    // ✅ new
 let CustomerAddressDetail = null;
 let ContactUs = null; // contact us model
+let Review = null;
+let Testimonial = null;
+let Video = null;
 
 // Local DB connection
-// export const dbConnection = async (database, username, password) => {
-//   const sequelize = new Sequelize(database, username, password, {
-//     host: "localhost",
-//     dialect: "postgres",
-//   });
+export const dbConnection = async (database, username, password) => {
+  const sequelize = new Sequelize(database, username, password, {
+    host: "localhost",
+    dialect: "postgres",
+  });
 
   // Production DB connection (commented)
-  export const dbConnection = async () => {
-    const sequelize = new Sequelize(process.env.DATABASE_URL, {
-      dialect: "postgres",
-      protocol: "postgres",
-      dialectOptions: {
-        ssl: {
-          require: true,
-          rejectUnauthorized: false, // Required for Railway PostgreSQL SSL
-        },
-      },
-    });
+  // export const dbConnection = async () => {
+  //   console.log("DATABASE_URL:", process.env.DATABASE_URL);
+  //   const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  //     dialect: "postgres",
+  //     protocol: "postgres",
+  //     dialectOptions: {
+  //       ssl: {
+  //         require: true,
+  //         rejectUnauthorized: false, // Required for Railway PostgreSQL SSL
+  //       },
+  //     },
+  //   });
   
   try {
     await sequelize.authenticate();
@@ -62,6 +69,9 @@ let ContactUs = null; // contact us model
     ProductPayment = await createProductPaymentModel(sequelize); // ✅ new
    CustomerAddressDetail = await customerAddressDetailModel(sequelize);
     ContactUs = await ContactUsModel(sequelize); // contact us model
+    Review = await createReviewModel(sequelize);
+    Testimonial = await createTestimonialModel(sequelize);
+    Video = await createVideoModel(sequelize);
     // Sync database
     await sequelize.sync({ alter: true });
 
@@ -84,4 +94,8 @@ export {
   CustomerAddressDetail,
   ProductPayment,   // ✅ export
   ContactUs // contact us model
+  , Review ,
+  Testimonial,
+  Video
+
 };

@@ -13,7 +13,11 @@ import product from "./route/product/product.route.js";
 import adminProduct from "./route/product/adminProduct.route.js";
 import customer from "./route/customer/customer.route.js";
 import contactus from "./route/contact-us/contact-us.route.js";
-import webhooks  from "./controller/customer-controller/webhooks.js";  
+import webhooks  from "./controller/customer-controller/webhooks.js"; 
+import Review  from "./route/product/review.js"
+import adminReview from "./route/product/review.admin.js"
+import testimonials from "./route/websiteResources/testimonial.route.js";
+import video from "./route/websiteResources/video.route.js"; 
 // import razorpay from "razorpay";
 import fs from "fs";
 import https from "https";
@@ -47,12 +51,18 @@ app.use(`${process.env.BASE_URL}/admin/product`, adminProduct); // admin routes
 app.use(`${process.env.BASE_URL}/customer`,customer); // serve customer docs statically
 app.use(`${process.env.BASE_URL}/contactus`,contactus);
 app.use(`${process.env.BASE_URL}/webhooks`,  webhooks);
+app.use(`${process.env.BASE_URL}/review`,  Review);
+app.use(`${process.env.BASE_URL}/AdminReview`,  adminReview);
+app.use(`${process.env.BASE_URL}/testimonial`,  testimonials);
+app.use(`${process.env.BASE_URL}/video`,  video); 
+
+
 
 // Local Database connection
-// dbConnection(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS);
+dbConnection(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS);
 
 // Production database connection
-dbConnection();
+// dbConnection();
 
 // const razorpay = new Razorpay({
 //   key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_R99agg2nuIaA5n",

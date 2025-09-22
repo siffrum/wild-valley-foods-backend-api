@@ -5,7 +5,6 @@ import { sendSuccess, sendError } from "../../Helper/response.helper.js";
 export const createContactUs = async (req, res) => {
   try {
     const reqData = req.body.reqData || {}; // ✅ no JSON.parse
-
     const contact = await ContactUs.create(reqData);
     const result = contact.toJSON();
 
@@ -78,10 +77,15 @@ export const getContactUsCount = async (req, res) => {
 };
 
 // ✅ UPDATE CONTACTUS
+// ✅ UPDATE CONTACTUS
 export const updateContactUs = async (req, res) => {
   try {
     if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
-    const reqData = req.body.reqData ? JSON.parse(req.body.reqData) : {};
+    // if req.body.reqData is already an object, don’t parse
+     const reqData = req.body.reqData || {}; // ✅ no JSON.parse
+      // ? JSON.parse(req.body.reqData)
+      // : req.body.reqData;
+
     reqData.lastModifiedBy = req.user.id;
 
     const contact = await ContactUs.findByPk(req.params.id);
@@ -95,6 +99,7 @@ export const updateContactUs = async (req, res) => {
     return sendError(res, err.message);
   }
 };
+
 
 // ✅ DELETE CONTACTUS
 export const deleteContactUs = async (req, res) => {
