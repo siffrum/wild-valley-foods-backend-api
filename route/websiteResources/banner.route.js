@@ -22,7 +22,7 @@ router.get("/getall", getAllBanners);
 router.get("/getall/paginated", getAllBannersByPagination);
 router.get("/getbyid/:id", getBannerById);
 router.get("/getbytype/:type", getBannersByType);
-router.put("/update/:id", authenticateToken, upload.single("image"), updateBanner);
+router.put("/update/:id", authenticateToken, (req, res, next) => { req.uploadFolder = "Banners"; next(); }, upload.single("imagePath"), updateBanner);
 router.delete("/delete/:id", authenticateToken, deleteBanner);
 
 export default router;

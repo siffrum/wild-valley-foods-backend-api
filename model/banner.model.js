@@ -17,7 +17,7 @@ const createBannerModel = (sequelize) => {
     },
     imagePath: {
       type: DataTypes.STRING, // store path only
-      allowNull: true,
+      allowNull: false,
     },
     link: {
       type: DataTypes.STRING,
