@@ -4,7 +4,7 @@ import {
   getAllCategories, getCategoryById, getAllCategoriesPaginated, getCategoryCount
 } from "../../controller/product/category.controller.js";
 import authenticate from "../../middlewares/auth/auth.js";
-import { upload } from "../../Helper/multer.helper.js";
+import { uploadCategory } from "../../Helper/multer.helper.js";
 
 const router = express.Router();
 
@@ -15,8 +15,8 @@ router.get('/categories/count', getCategoryCount);
 router.get('/categoryById/:id', getCategoryById);
 
 // Admin
-router.post('/admin/createcategory', authenticate, (req, res, next) => { req.uploadFolder = "category-icons"; next(); }, upload.single("category_icon"), createCategory);
-router.put('/admin/updatecategoryById/:id', authenticate, (req, res, next) => { req.uploadFolder = "category-icons"; next(); }, upload.single("category_icon"), updateCategory);
+router.post('/admin/createcategory', authenticate, (req, res, next) => { req.uploadFolder = "category-icons"; next(); }, uploadCategory.single("category_icon"), createCategory);
+router.put('/admin/updatecategoryById/:id', authenticate, (req, res, next) => { req.uploadFolder = "category-icons"; next(); }, uploadCategory.single("category_icon"), updateCategory);
 router.delete('/admin/deletecategoryById/:id', authenticate, deleteCategory);
 
 export default router;

@@ -41,18 +41,13 @@ export const searchProductsOdata = async (req, res) => {
     });
 
     // ✅ Convert images
-    const productsWithBase64 = items.map(prod => {
+    const result = items.map(prod => {
       const obj = prod.toJSON();
       obj.images = obj.images.map(img => convertImageToBase64(img.imagePath)).filter(Boolean);
       return obj;
     });
 
-    return sendSuccess(res, {
-      items: productsWithBase64,
-      total,
-      skip,
-      top
-    });
+    return sendSuccess(res, result);
   } catch (err) {
     console.error("❌ SEARCH PRODUCTS ERROR:", err);
     return sendError(res, err.message);
@@ -86,7 +81,7 @@ export const getProductsByCategoryId = async (req, res) => {
       return sendError(res, "No products found for this category", 404);
     }
 
-    const productsWithBase64 = items.map((prod) => {
+    const result = items.map((prod) => {
       const obj = prod.toJSON();
       obj.images = obj.images
         .map((img) => convertImageToBase64(img.imagePath))
@@ -94,12 +89,7 @@ export const getProductsByCategoryId = async (req, res) => {
       return obj;
     });
 
-    return sendSuccess(res, {
-      items: productsWithBase64,
-      total,
-      skip,
-      top,
-    });
+    return sendSuccess(res, result);
   } catch (err) {
     console.error("❌ GET PRODUCTS BY CATEGORY ERROR:", err);
     return sendError(res, err.message);
@@ -131,7 +121,7 @@ export const getNewArrivalProducts = async (req, res) => {
   try {
     const products = await Product.findAll({
       order: [["createdOnUTC", "DESC"]], // newest first
-      limit: 10,
+      limit: 8,
       include: [
         { model: Category, as: "category" },
         { model: Image, as: "images" },

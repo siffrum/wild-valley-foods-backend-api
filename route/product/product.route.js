@@ -19,9 +19,9 @@ router.get("/paginated", getAllProductsByOdata);
 router.get("/count", getProductCount);   // keep before :id
 
 // 🔹 New Endpoints
-router.get("/category/:categoryId", getProductsByCategoryId);
+router.get("/ByCategoryId/:categoryId/paginated", getProductsByCategoryId);
 router.get("/new-arrivals", getNewArrivalProducts);
-router.get("/category/:categoryId/count", getProductCountByCategoryId);
+router.get("/count/ByCategoryId/:categoryId", getProductCountByCategoryId);
 // 🔹 Must be last (dynamic route)
 router.get("/:id", getProductById);
 

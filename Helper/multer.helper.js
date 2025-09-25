@@ -19,7 +19,64 @@ const storage = multer.diskStorage({
   },
 });
 
+export const uploadBanner = multer({
+  storage,
+  limits: {  fileSize: 5 * 1024 * 1024,fieldSize: 50 * 1024 * 1024 }, // 50MB
+  fileFilter: (req, file, cb) => {
+    const allowedExt = [
+      ".jpg", ".jpeg", ".png", ".webp",
+      ".gif", ".bmp", ".tiff", ".svg"
+    ];
+    const allowedMime = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "image/bmp",
+      "image/tiff",
+      "image/svg+xml"
+    ];
+
+    const ext = path.extname(file.originalname).toLowerCase();
+    const mime = file.mimetype;
+
+    if (!allowedExt.includes(ext) || !allowedMime.includes(mime)) {
+      console.error(`❌ Blocked file: ${file.originalname} (${mime})`);
+      return cb(new Error("Unsupported file type"));
+    }
+    cb(null, true);
+  },
+});
 export const upload = multer({
+  storage,
+  limits: {  fileSize: 50 * 1024 * 1024,fieldSize: 50 * 1024 * 1024 }, // 50MB
+  fileFilter: (req, file, cb) => {
+    const allowedExt = [
+      ".jpg", ".jpeg", ".png", ".webp",
+      ".gif", ".bmp", ".tiff", ".svg"
+    ];
+    const allowedMime = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "image/bmp",
+      "image/tiff",
+      "image/svg+xml"
+    ];
+
+    const ext = path.extname(file.originalname).toLowerCase();
+    const mime = file.mimetype;
+
+    if (!allowedExt.includes(ext) || !allowedMime.includes(mime)) {
+      console.error(`❌ Blocked file: ${file.originalname} (${mime})`);
+      return cb(new Error("Unsupported file type"));
+    }
+    cb(null, true);
+  },
+});
+
+export const uploadCategory = multer({
   storage,
   limits: {  fileSize: 5 * 1024 * 1024,fieldSize: 50 * 1024 * 1024 }, // 50MB
   fileFilter: (req, file, cb) => {
