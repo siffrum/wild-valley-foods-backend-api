@@ -11,7 +11,7 @@ const createProductModel = (sequelize) => {
     },
     name: { type: DataTypes.STRING, allowNull: false },
     description: { type: DataTypes.TEXT, allowNull: true },
-    richDescription: { type: DataTypes.STRING, allowNull: true },
+    richDescription: { type: DataTypes.TEXT, allowNull: true },
     itemId: { type: DataTypes.STRING, allowNull: true }, // our SKU/ID
     price: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
     sku: { type: DataTypes.STRING, allowNull: false, unique: true },
