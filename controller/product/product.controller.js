@@ -39,7 +39,10 @@ export const searchProductsOdata = async (req, res) => {
       offset: skip,
       limit: top,
     });
-
+    
+ if (!items.length) {
+      return sendError(res, "No products found for this keyword", 404);
+    }
     // ✅ Convert images
     const result = items.map(prod => {
       const obj = prod.toJSON();
