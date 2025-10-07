@@ -12,16 +12,19 @@ export const createBanner = async (req, res) => {
     reqData.createdBy = req.user.id;
     reqData.lastModifiedBy = req.user.id;
 
-    const banner = await Banner.create(reqData);
-
+    // Only set imagePath here if file exists
     if (req.file) {
-      banner.imagePath = req.file.path;
-      await banner.save();
+      reqData.imagePath = req.file.path; 
+    } else {
+      return sendError(res, "Image is required");
     }
+
+    const banner = await Banner.create(reqData);
 
     const result = banner.toJSON();
     result.image_base64 = result.imagePath ? convertImageToBase64(result.imagePath) : null;
     return sendSuccess(res, result, 201);
+
   } catch (err) {
     console.error("❌ CREATE BANNER ERROR:", err);
     return sendError(res, err.message);
@@ -29,11 +32,10 @@ export const createBanner = async (req, res) => {
 };
 
 
+
 // ✅ UPDATE BANNER
 export const updateBanner = async (req, res) => {
   try {
-        console.log("req.body:", req.body);
-    console.log("req.file:", req.file);
     if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
     const reqData = req.body.reqData ? JSON.parse(req.body.reqData) : {};
     reqData.createdBy = req.user.id;
