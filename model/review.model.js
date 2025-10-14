@@ -15,6 +15,10 @@ const createReviewModel = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+        isApproved: {
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+      },
       email: {
         type: DataTypes.STRING,
         allowNull: false,

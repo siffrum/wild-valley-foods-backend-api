@@ -39,7 +39,6 @@ export const getAllContactUsPaginated = async (req, res) => {
 export const getAllContactUs = async (req, res) => {
   try {
     if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
-
     const contactus = await ContactUs.findAll({ order: [["createdOnUTC", "DESC"]] });
     const result = contactus.map((c) => c.toJSON());
     return sendSuccess(res, result);

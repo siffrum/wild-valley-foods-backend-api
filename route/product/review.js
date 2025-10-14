@@ -13,7 +13,7 @@ const router = express.Router();
 router.get("/getall/paginated", getAllReviews); // paginated
 router.get("/count", getReviewCount); // total count of reviews
 router.get("/:id", getReviewById);
-router.get("/GetAllProductReviewsByProductId/:productId", getPaginatedReviewsForProduct);
+router.get("/GetAllPaginatedProductReviewsByProductId/:productId", getPaginatedReviewsForProduct);
 
 router.get("/product/average-rating/:productId", getAverageRatingForProduct);
 router.post("/CreateProductReviewByProductId/:productId", createReviewForProduct);

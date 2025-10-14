@@ -10,22 +10,25 @@ export const getAllReviews = async (req, res) => {
     const skip = parseInt(req.query.skip, 10) || 0;
     const top = parseInt(req.query.top, 10) || 10;
 
-    const { count: total, rows: items } = await Review.findAndCountAll({
+    // const { count: total, rows: items } = await Review.findAndCountAll({
+    //   offset: skip,
+    //   limit: top,
+    //   include: [
+    //     { model: Product, as: "product" },
+    //   ],
+    //   order: [["createdOnUTC", "DESC"]],
+    // });
+    const contactus = await Review.findAll({
       offset: skip,
       limit: top,
-      include: [
+         include: [
         { model: Product, as: "product" },
       ],
       order: [["createdOnUTC", "DESC"]],
     });
 
-    return sendSuccess(res, {
-      items,
-      intResponse: total,
-      responseMessage: "Reviews fetched successfully",
-      skip,
-      top,
-    });
+    const result = contactus.map((c) => c.toJSON());
+    return sendSuccess(res, result);
   } catch (err) {
     console.error("❌ GET ALL REVIEWS ERROR:", err);
     return sendError(res, err.message);
@@ -237,3 +240,45 @@ export const deleteReview = async (req, res) => {
     return sendError(res, err.message);
   }
 };
+
+// ✅ Approve or Reject a Review (Admin Only)
+export const approveOrRejectReview = async (req, res) => {
+  try {
+    // Only admin can approve/reject
+    if (!req.user || req.user.role !== "Admin") {
+      return sendError(res, "Unauthorized access — Admin only", 403);
+    }
+
+    const { id } = req.params; // Review ID from URL
+    const { isApproved } = req.body; // Expected: true or false
+
+    // ✅ Validate input
+    if (typeof isApproved !== "boolean") {
+      return sendError(res, "isApproved must be a boolean (true/false)", 400);
+    }
+
+    // ✅ Find review
+    const review = await Review.findByPk(id);
+    if (!review) {
+      return sendError(res, "Review not found", 404);
+    }
+
+    // ✅ Update approval status
+    await review.update({
+      isApproved,
+      lastModifiedBy: req.user.id,
+    });
+
+    const statusMessage = isApproved ? "approved" : "rejected";
+
+    // ✅ Respond with updated data
+    return sendSuccess(res, {
+      ...review.toJSON(),
+      responseMessage: `Review has been successfully ${statusMessage}`,
+    });
+  } catch (err) {
+    console.error("❌ APPROVE/REJECT REVIEW ERROR:", err);
+    return sendError(res, err.message);
+  }
+};
+
