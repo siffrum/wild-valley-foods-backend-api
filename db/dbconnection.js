@@ -7,8 +7,8 @@ import createUserModel from "../model/userModel.js";
 import createLicenseModel from "../model/licences.model.js";
 import createModuleModel from "../model/module.model.js";
 import createBannerModel from "../model/banner.model.js";
-import createCategoryModel from "../model/product/category.model.js";
-import createProductModel from "../model/product/product.model.js";
+import createCategoryModel from "../model/category.model.js";
+import createProductModel from "../model/product.model.js";
 import createImageModel from "../model/image.model.js";
 import customerAddressDetailModel from "../model/customerAddressDetail.model.js";
 import createProductPaymentModel from "../model/productpayment.model.js"; // ✅ new
@@ -17,6 +17,7 @@ import ContactUsModel  from "../model/contactUs.model.js";  // contact us model
 import createReviewModel from "../model/review.model.js";
 import createTestimonialModel from "../model/testmonials.model.js";
 import createVideoModel from "../model/video.model.js"; 
+
 
 // Variables
 let User = null;
