@@ -7,12 +7,14 @@ import sharp from "sharp";
  * Configure multer storage (dynamic folder creation)
  */
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const folder = req.uploadFolder || "uploads/others";
-    const uploadDir = path.join(process.cwd(), folder);
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-    cb(null, uploadDir);
-  },
+destination: (req, file, cb) => {
+  const folder = req.uploadFolder || "uploads/others";
+  // ✅ Ensure folder always lives inside uploads/
+  const fullFolder = folder.startsWith("uploads") ? folder : path.join("uploads", folder);
+  const uploadDir = path.join(process.cwd(), fullFolder);
+  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+  cb(null, uploadDir);
+},
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     const fileName = `${file.fieldname}_${Date.now()}${ext}`;
@@ -135,11 +137,16 @@ export const convertImageToBase64 = (filePath) => {
  */
 export const deleteFileSafe = (filePath) => {
   try {
-    if (filePath && fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-      console.log(`🗑️ Deleted: ${filePath}`);
+    if (!filePath) return;
+    const absPath = path.isAbsolute(filePath)
+      ? filePath
+      : path.join(process.cwd(), filePath);
+    if (fs.existsSync(absPath)) {
+      fs.unlinkSync(absPath);
+      console.log(`🗑️ Deleted: ${absPath}`);
     }
   } catch (err) {
     console.error("❌ Error deleting file:", err);
   }
 };
+

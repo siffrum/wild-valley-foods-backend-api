@@ -1,7 +1,6 @@
 import { Banner } from "../../db/dbconnection.js";
 import { sendSuccess, sendError } from "../../Helper/response.helper.js";
 import { convertImageToBase64, deleteFileSafe } from "../../Helper/multer.helper.js";
-import path from "path";  // ✅ make sure this is at the top
 
 
 export const createBanner = async (req, res) => {
@@ -33,33 +32,41 @@ export const createBanner = async (req, res) => {
 
 
 
-// ✅ UPDATE BANNER
+// ✅ UPDATE BANNER (fixed)
 export const updateBanner = async (req, res) => {
   try {
     if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
+
     const reqData = req.body.reqData ? JSON.parse(req.body.reqData) : {};
-    reqData.createdBy = req.user.id;
-    reqData.lastModifiedBy=req.user.id;
+    reqData.lastModifiedBy = req.user.id;
 
     const banner = await Banner.findByPk(req.params.id);
-    if (!banner) return sendError(res, "Category not found", 404);
+    if (!banner) return sendError(res, "Banner not found", 404);
+
+    // ✅ Store old image before update
+    const oldImagePath = banner.imagePath;
 
     await banner.update(reqData);
 
     if (req.file) {
-      deleteFileSafe(banner.imagePath);
+      // ✅ Delete the old file safely
+      deleteFileSafe(oldImagePath);
+
+      // ✅ Save new file path
       banner.imagePath = req.file.path;
       await banner.save();
     }
 
     const result = banner.toJSON();
     result.image_base64 = result.imagePath ? convertImageToBase64(result.imagePath) : null;
+
     return sendSuccess(res, result);
   } catch (err) {
-    console.error("❌ UPDATE Banner ERROR:", err);
+    console.error("❌ UPDATE BANNER ERROR:", err);
     return sendError(res, err.message);
   }
 };
+
 
 // ✅ GET ALL BANNERS
 export const getAllBanners = async (req, res) => {

@@ -202,12 +202,14 @@ export const updateProduct = async (req, res) => {
     const product = await Product.findByPk(req.params.id);
     if (!product) return sendError(res, "Product not found", 404);
 
-    // Step 1: Update Razorpay
+    // Step 1: Update Razorpay item if exists
     if (product.razorpayItemId) {
       await razorpay.items.edit(product.razorpayItemId, {
         name: reqData.name || product.name,
         description: reqData.description || product.description,
-        amount: reqData.price ? Math.round(parseFloat(reqData.price) * 100) : undefined,
+        amount: reqData.price
+          ? Math.round(parseFloat(reqData.price) * 100)
+          : undefined,
         currency: reqData.currency || product.currency,
         hsn_code: reqData.hsnCode || product.hsnCode,
         tax_rate: reqData.taxRate || product.taxRate,
@@ -215,26 +217,38 @@ export const updateProduct = async (req, res) => {
       });
     }
 
-    // Step 2: Update DB
+    // Step 2: Update product fields in DB
     await product.update(reqData);
 
-    // Step 3: Replace Images if provided
-    if (req.files && req.files.length) {
-      const existing = await Image.findAll({ where: { productId: req.params.id } });
-      for (const img of existing) deleteFileSafe(img.imagePath);
-      await Image.destroy({ where: { productId: req.params.id } });
+    // Step 3: Handle image updates (delete old and save new)
+    if (req.files && req.files.length > 0) {
+      const existingImages = await Image.findAll({
+        where: { productId: product.id },
+      });
 
+      // Delete old image files
+      for (const img of existingImages) {
+        deleteFileSafe(img.imagePath);
+      }
+
+      // Remove old image records
+      await Image.destroy({ where: { productId: product.id } });
+
+      // Add new image records
       for (const file of req.files) {
         await Image.create({ imagePath: file.path, productId: product.id });
       }
     }
 
-    const updated = await Product.findByPk(req.params.id, {
+    // Step 4: Fetch updated product with images
+    const updatedProduct = await Product.findByPk(req.params.id, {
       include: [{ model: Image, as: "images" }],
     });
 
-    const result = updated.toJSON();
-    result.images = result.images.map(img => convertImageToBase64(img.imagePath)).filter(Boolean);
+    const result = updatedProduct.toJSON();
+    result.images = result.images
+      .map((img) => convertImageToBase64(img.imagePath))
+      .filter(Boolean);
 
     return sendSuccess(res, result);
   } catch (err) {
@@ -242,6 +256,7 @@ export const updateProduct = async (req, res) => {
     return sendError(res, err.message);
   }
 };
+
 
 // ✅ GET ALL PRODUCTS
 export const getAllProducts = async (req, res) => {

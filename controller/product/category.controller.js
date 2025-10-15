@@ -30,29 +30,38 @@ export const createCategory = async (req, res) => {
 export const updateCategory = async (req, res) => {
   try {
     if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
+
     const reqData = req.body.reqData ? JSON.parse(req.body.reqData) : {};
-    reqData.createdBy = req.user.id;
-    reqData.lastModifiedBy=req.user.id;
+    reqData.lastModifiedBy = req.user.id;
 
     const category = await Category.findByPk(req.params.id);
     if (!category) return sendError(res, "Category not found", 404);
 
+    // Update category details first
     await category.update(reqData);
 
+    // If new icon uploaded → delete old and save new
     if (req.file) {
-      deleteFileSafe(category.category_icon);
+      if (category.category_icon) {
+        deleteFileSafe(category.category_icon);
+      }
       category.category_icon = req.file.path;
       await category.save();
     }
 
+    // Prepare final response
     const result = category.toJSON();
-    result.category_icon_base64 = result.category_icon ? convertImageToBase64(result.category_icon) : null;
+    result.category_icon_base64 = category.category_icon
+      ? convertImageToBase64(category.category_icon)
+      : null;
+
     return sendSuccess(res, result);
   } catch (err) {
     console.error("❌ UPDATE CATEGORY ERROR:", err);
     return sendError(res, err.message);
   }
 };
+
 // ✅ GET ALL CATEGORIES PAGINATED
 export const getAllCategoriesPaginated = async (req, res) => {
   try {
