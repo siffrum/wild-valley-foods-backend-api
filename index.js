@@ -14,8 +14,8 @@ import adminProduct from "./route/product/adminProduct.route.js";
 import customer from "./route/customer/customer.route.js";
 import contactus from "./route/contact-us/contact-us.route.js";
 import webhooks  from "./controller/customer-controller/webhooks.js"; 
-import Review  from "./route/product/review.js"
-import adminReview from "./route/product/review.admin.js"
+import Review  from "./route/product/review.js";
+import adminReview from "./route/product/review.admin.js";
 import testimonials from "./route/websiteResources/testimonial.route.js";
 import video from "./route/websiteResources/video.route.js"; 
 import fs from "fs";
@@ -23,11 +23,11 @@ import https from "https";
 
 const app = express();
 
-// ✅ Express body parsers
+// ✅ Body parsers
 app.use(express.json({ limit: "50mb", strict: false }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-// ✅ Correct CORS configuration
+// ✅ Full CORS fix for frontend with custom headers
 app.use(cors({
   origin: 'https://wvf.onrender.com',
   credentials: true,
