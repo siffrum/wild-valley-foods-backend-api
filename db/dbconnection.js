@@ -35,25 +35,25 @@ let Testimonial = null;
 let Video = null;
 
 // Local DB connection
-export const dbConnection = async (database, username, password) => {
-  const sequelize = new Sequelize(database, username, password, {
-    host: "localhost",
-    dialect: "postgres",
-  });
+// export const dbConnection = async (database, username, password) => {
+//   const sequelize = new Sequelize(database, username, password, {
+//     host: "localhost",
+//     dialect: "postgres",
+//   });
 
-  // Production DB connection (commented)
-  // export const dbConnection = async () => {
-  //   console.log("DATABASE_URL:", process.env.DATABASE_URL);
-  //   const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  //     dialect: "postgres",
-  //     protocol: "postgres",
-  //     dialectOptions: {
-  //       ssl: {
-  //         require: true,
-  //         rejectUnauthorized: false, // Required for Railway PostgreSQL SSL
-  //       },
-  //     },
-  //   });
+  Production DB connection (commented)
+  export const dbConnection = async () => {
+    console.log("DATABASE_URL:", process.env.DATABASE_URL);
+    const sequelize = new Sequelize(process.env.DATABASE_URL, {
+      dialect: "postgres",
+      protocol: "postgres",
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false, // Required for Railway PostgreSQL SSL
+        },
+      },
+    });
   
   try {
     await sequelize.authenticate();

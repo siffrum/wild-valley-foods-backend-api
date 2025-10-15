@@ -59,10 +59,10 @@ app.use(`${process.env.BASE_URL}/video`,  video);
 
 
 // Local Database connection
-dbConnection(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS);
+// dbConnection(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS);
 
 // Production database connection
-// dbConnection();
+dbConnection();
 
 // const razorpay = new Razorpay({
 //   key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_R99agg2nuIaA5n",
@@ -119,6 +119,14 @@ dbConnection(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS);
 //   console.log("✅ HTTPS Server running at https://localhost:5000");
 // });
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server is running at port ${process.env.PORT}`);
+// app.listen(process.env.PORT, () => {
+//   console.log(`Server is running at port ${process.env.PORT}`);
+// });
+// Add a health route (optional but useful)
+app.get("/health", (req, res) => res.json({ status: "ok", time: new Date().toISOString() }));
+
+// Use a default port if not provided
+const PORT = process.env.PORT || 8081;
+app.listen(PORT, () => {
+  console.log(`Server is running at port ${PORT} (NODE_ENV=${process.env.NODE_ENV || "development"})`);
 });
