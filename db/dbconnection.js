@@ -7,8 +7,8 @@ import createUserModel from "../model/userModel.js";
 import createLicenseModel from "../model/licences.model.js";
 import createModuleModel from "../model/module.model.js";
 import createBannerModel from "../model/banner.model.js";
-import createCategoryModel from "../model/category.model.js";
-import createProductModel from "../model/product.model.js";
+import createCategoryModel from "../model/product/category.model.js";
+import createProductModel from "../model/product/product.model.js";
 import createImageModel from "../model/image.model.js";
 import customerAddressDetailModel from "../model/customerAddressDetail.model.js";
 import createProductPaymentModel from "../model/productpayment.model.js"; // ✅ new
@@ -41,22 +41,25 @@ let Video = null;
 //     dialect: "postgres",
 //   });
 
-  // Production DB connection (commented)
-  export const dbConnection = async () => {
-    console.log("DATABASE_URL:", process.env.DATABASE_URL);
-    const sequelize = new Sequelize(process.env.DATABASE_URL, {
-      dialect: "postgres",
-      protocol: "postgres",
-      dialectOptions: {
-        ssl: {
-          require: true,
-          rejectUnauthorized: false, // Required for Railway PostgreSQL SSL
-        },
+// Production DB connection (commented)
+export const dbConnection = async () => {
+  console.log("DATABASE_URL:", process.env.DATABASE_URL);
+  const sequelize = new Sequelize(process.env.DATABASE_URL, {
+    dialect: "postgres",
+    protocol: "postgres",
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false, // Required for Railway PostgreSQL SSL
       },
-    });
-  
+    },
+    logging: false, // optional: hide SQL logs
+  });
+
   try {
     await sequelize.authenticate();
+    console.log("✅ DB Authenticated");
+
     // Initialize models
     User = await createUserModel(sequelize);
     License = await createLicenseModel(sequelize);
@@ -67,17 +70,38 @@ let Video = null;
     Image = await createImageModel(sequelize);
     CustomerDetail = await customerDetailModel(sequelize);               // ✅ new
     ProductPayment = await createProductPaymentModel(sequelize); // ✅ new
-   CustomerAddressDetail = await customerAddressDetailModel(sequelize);
+    CustomerAddressDetail = await customerAddressDetailModel(sequelize);
     ContactUs = await ContactUsModel(sequelize); // contact us model
     Review = await createReviewModel(sequelize);
     Testimonial = await createTestimonialModel(sequelize);
     Video = await createVideoModel(sequelize);
+
     // Sync database
     await sequelize.sync({ alter: true });
-
     console.log("✅ Connection has been established successfully.");
+
+    return {
+      sequelize,
+      models: {
+        User,
+        License,
+        Module,
+        Banner,
+        categories,
+        Product,
+        Image,
+        CustomerDetail,       // ✅ export
+        CustomerAddressDetail,
+        ProductPayment,   // ✅ export
+        ContactUs, // contact us model
+        Review,
+        Testimonial,
+        Video
+      }
+    };
   } catch (error) {
     console.error("❌ Unable to connect to the database:", error);
+    throw error; // important: stop server if DB fails
   }
 };
 
@@ -93,9 +117,8 @@ export {
   CustomerDetail,       // ✅ export
   CustomerAddressDetail,
   ProductPayment,   // ✅ export
-  ContactUs // contact us model
-  , Review ,
+  ContactUs, // contact us model
+  Review,
   Testimonial,
   Video
-
 };
