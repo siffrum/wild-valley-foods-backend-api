@@ -122,7 +122,6 @@ dbConnection();
 // app.listen(process.env.PORT, () => {
 //   console.log(`Server is running at port ${process.env.PORT}`);
 // });
-// Add a health route (optional but useful)
 app.get("/health", (req, res) => res.json({ status: "ok", time: new Date().toISOString() }));
 
 // Use a default port if not provided

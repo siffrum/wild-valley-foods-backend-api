@@ -41,7 +41,7 @@ let Video = null;
 //     dialect: "postgres",
 //   });
 
-  Production DB connection (commented)
+  // Production DB connection (commented)
   export const dbConnection = async () => {
     console.log("DATABASE_URL:", process.env.DATABASE_URL);
     const sequelize = new Sequelize(process.env.DATABASE_URL, {
