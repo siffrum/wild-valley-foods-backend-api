@@ -7,14 +7,16 @@ import sharp from "sharp";
  * Configure multer storage (dynamic folder creation)
  */
 const storage = multer.diskStorage({
-destination: (req, file, cb) => {
-  const folder = req.uploadFolder || "uploads/others";
-  // ✅ Ensure folder always lives inside uploads/
-  const fullFolder = folder.startsWith("uploads") ? folder : path.join("uploads", folder);
-  const uploadDir = path.join(process.cwd(), fullFolder);
-  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-  cb(null, uploadDir);
-},
+  destination: (req, file, cb) => {
+    const folder = req.uploadFolder || "uploads/others";
+    // ✅ Ensure folder always lives inside uploads/
+    const fullFolder = folder.startsWith("uploads")
+      ? folder
+      : path.join("uploads", folder);
+    const uploadDir = path.join(process.cwd(), fullFolder);
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+    cb(null, uploadDir);
+  },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     const fileName = `${file.fieldname}_${Date.now()}${ext}`;
@@ -47,29 +49,37 @@ const fileFilter = (req, file, cb) => {
 };
 
 /**
- * Convert standard images to WebP
+ * Compress and convert uploaded image to WebP
+ * Retains visual quality but reduces size dramatically
  */
-const convertToWebP = async (filePath) => {
+const compressAndConvertImage = async (filePath) => {
   try {
     const ext = path.extname(filePath).toLowerCase();
-    if (ext === ".webp") return filePath; // already WebP
-
     const outputPath = filePath.replace(ext, ".webp");
+
     await sharp(filePath)
-      .webp({ quality: 90 })
+      .rotate() // auto-orient
+      .resize({
+        width: 1920, // ✅ maximum width to prevent large uploads
+        withoutEnlargement: true,
+      })
+      .webp({
+        quality: 85, // ✅ 80–90 = high quality with small size
+        effort: 4,   // compression effort (1–6)
+      })
       .toFile(outputPath);
 
     fs.unlinkSync(filePath); // remove original
-    console.log(`✅ Converted → WebP: ${outputPath}`);
+    console.log(`✅ Compressed & converted → ${outputPath}`);
     return outputPath;
   } catch (error) {
-    console.error("❌ WebP conversion failed:", error);
+    console.error("❌ Image compression failed:", error);
     return filePath;
   }
 };
 
 /**
- * Multer uploaders
+ * Multer uploaders (can define per module)
  */
 export const uploadBanner = multer({
   storage,
@@ -90,18 +100,37 @@ export const uploadCategory = multer({
 });
 
 /**
- * Middleware to convert uploaded images to WebP automatically
+ * Middleware to compress uploaded image (for single file uploads)
  */
-export const convertUploadedImage = async (req, res, next) => {
+export const compressUploadedImage = async (req, res, next) => {
   try {
     if (!req.file) return next();
 
-    const convertedPath = await convertToWebP(req.file.path);
-    req.file.path = convertedPath;
-    req.file.filename = path.basename(convertedPath);
+    const compressedPath = await compressAndConvertImage(req.file.path);
+    req.file.path = compressedPath;
+    req.file.filename = path.basename(compressedPath);
     next();
   } catch (err) {
-    console.error("❌ Error converting uploaded image:", err);
+    console.error("❌ Error compressing uploaded image:", err);
+    next();
+  }
+};
+
+/**
+ * Middleware to compress all uploaded images (for multiple file uploads)
+ */
+export const compressMultipleImages = async (req, res, next) => {
+  try {
+    if (!req.files || !req.files.length) return next();
+
+    for (let file of req.files) {
+      const compressedPath = await compressAndConvertImage(file.path);
+      file.path = compressedPath;
+      file.filename = path.basename(compressedPath);
+    }
+    next();
+  } catch (err) {
+    console.error("❌ Error compressing multiple images:", err);
     next();
   }
 };
@@ -149,4 +178,3 @@ export const deleteFileSafe = (filePath) => {
     console.error("❌ Error deleting file:", err);
   }
 };
-
