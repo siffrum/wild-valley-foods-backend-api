@@ -57,10 +57,10 @@ app.use(`${process.env.BASE_URL}/video`,  video);
 
 
 // Local Database connection
-dbConnection(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS);
+// dbConnection(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS);
 
 // Production database connection
-// dbConnection();
+dbConnection();
 
 // const razorpay = new Razorpay({
 //   key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_R99agg2nuIaA5n",
