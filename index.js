@@ -18,24 +18,22 @@ import Review  from "./route/product/review.js"
 import adminReview from "./route/product/review.admin.js"
 import testimonials from "./route/websiteResources/testimonial.route.js";
 import video from "./route/websiteResources/video.route.js"; 
-// import razorpay from "razorpay";
 import fs from "fs";
 import https from "https";
 
 const app = express();
 
-// ✅ Use built-in Express body parsers (no body-parser)
-app.use(express.json({ limit: "50mb", strict: false })); // strict:false lets "null" pass if sent
+// ✅ Express body parsers
+app.use(express.json({ limit: "50mb", strict: false }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: "*",
-  })
-);
+// ✅ Correct CORS configuration
+app.use(cors({
+  origin: 'https://wvf.onrender.com', // allow your frontend domain
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"],
+}));
 
 // Middleware
 app.use(cookie());
@@ -59,10 +57,10 @@ app.use(`${process.env.BASE_URL}/video`,  video);
 
 
 // Local Database connection
-// dbConnection(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS);
+dbConnection(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS);
 
 // Production database connection
-dbConnection();
+// dbConnection();
 
 // const razorpay = new Razorpay({
 //   key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_R99agg2nuIaA5n",
