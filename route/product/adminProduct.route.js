@@ -3,6 +3,8 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  getRecentBestSellingProducts,
+  updateBestSellingState
 } from "../../controller/product/product.controller.js";
 import authenticate from "../../middlewares/auth/auth.js";
 import {
@@ -38,5 +40,11 @@ router.put(
 );
 
 router.delete("/deleteproductById/:id", authenticate, deleteProduct);
+
+// ✅ NEW: Recently Added 8 Best Selling Products
+router.get("/bestselling/recent", getRecentBestSellingProducts);
+
+// ✅ Admin can set best-selling true or false
+router.put("/bestselling/state/:id", authenticate, updateBestSellingState);
 
 export default router;

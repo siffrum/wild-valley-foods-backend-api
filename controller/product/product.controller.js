@@ -256,6 +256,74 @@ export const updateProduct = async (req, res) => {
     return sendError(res, err.message);
   }
 };
+// ✅ NEW: Get 8 Recently Added Best-Selling Products
+export const getRecentBestSellingProducts = async (req, res) => {
+  try {
+    const products = await Product.findAll({
+      where: { isBestSelling: true },
+      order: [["createdOnUTC", "DESC"]], // newest best-sellers first
+      limit: 8,
+      include: [
+        { model: Category, as: "category" },
+        { model: Image, as: "images" },
+      ],
+    });
+
+    if (!products.length) {
+      return sendError(res, "No best-selling products found", 404);
+    }
+
+    const result = products.map((prod) => {
+      const obj = prod.toJSON();
+      obj.images = obj.images
+        .map((img) => convertImageToBase64(img.imagePath))
+        .filter(Boolean);
+      return obj;
+    });
+
+    return sendSuccess(res, result);
+  } catch (err) {
+    console.error("❌ GET BEST SELLING PRODUCTS ERROR:", err);
+    return sendError(res, err.message);
+  }
+};
+
+
+// ✅ NEW: Admin can set Product Best Selling State (true or false)
+export const updateBestSellingState = async (req, res) => {
+  try {
+    if (req.user.role !== "Admin") {
+      return sendError(res, "Unauthorized", 403);
+    }
+
+    const { id } = req.params;
+    const { isBestSelling } = req.body; // expects boolean true/false
+
+    // Validate input
+    if (typeof isBestSelling !== "boolean") {
+      return sendError(res, "Please provide a valid boolean value for isBestSelling", 400);
+    }
+
+    // Find product
+    const product = await Product.findByPk(id);
+    if (!product) return sendError(res, "Product not found", 404);
+
+    // Update product
+    await product.update({
+      isBestSelling,
+      lastModifiedBy: req.user.id,
+    });
+
+    return sendSuccess(res, {
+      message: `Product best-selling status updated successfully`,
+      productId: id,
+      isBestSelling: product.isBestSelling,
+    });
+  } catch (err) {
+    console.error("❌ UPDATE BEST SELLING STATE ERROR:", err);
+    return sendError(res, err.message);
+  }
+};
 
 
 // ✅ GET ALL PRODUCTS

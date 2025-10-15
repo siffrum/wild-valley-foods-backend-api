@@ -1,4 +1,4 @@
-import { DataTypes } from 'sequelize';
+import { BOOLEAN, DataTypes } from 'sequelize';
 
 const createProductModel = (sequelize) => {
   const Category = sequelize.models.Category;
@@ -20,7 +20,7 @@ const createProductModel = (sequelize) => {
     shippingOptions: { type: DataTypes.JSONB, allowNull: true },
     paymentOptions: { type: DataTypes.JSONB, allowNull: true },
     currency: { type: DataTypes.STRING, allowNull: true, defaultValue: "INR" },
-
+    isBestSelling:{type:DataTypes.BOOLEAN,allowNull:false,defaultValue:false},
     // 🔹 Razorpay-specific
     razorpayItemId: { type: DataTypes.STRING, allowNull: true },
     hsnCode: { type: DataTypes.STRING, allowNull: true },
