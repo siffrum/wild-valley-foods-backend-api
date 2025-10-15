@@ -32,14 +32,13 @@ app.use(cors({
   origin: 'https://wvf.onrender.com',
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "Accept",
-    "Origin",
-    "X-Requested-With",
-    "targetapitype" // custom header
-  ],
+  allowedHeaders: "*", // Allow all headers including custom ones
+}));
+
+// ✅ Handle OPTIONS preflight requests
+app.options('*', cors({
+  origin: 'https://wvf.onrender.com',
+  credentials: true,
 }));
 
 // Middleware
@@ -79,6 +78,7 @@ const startServer = async () => {
     // Production database connection
     // dbConnection(); // already handled above
 
+    // Razorpay example (commented)
     // const razorpay = new Razorpay({
     //   key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_R99agg2nuIaA5n",
     //   key_secret: process.env.RAZORPAY_KEY_SECRET || "NQHte2R5i5nVFQlA1HliCF0r"
@@ -86,42 +86,9 @@ const startServer = async () => {
     // app.get("/", (req, res) => {
     //   res.send("Hello, world!");
     // });
-    // // Route
-    // app.post("/create-payment-link", async (req, res) => {
-    //   const { amount, currency, customer, reference_id, notes } = req.body;
-    //   try {
-    //     const response = await razorpay.paymentLink.create({
-    //       amount: amount * 100, // paise
-    //       currency: currency || "INR",
-    //       customer: {
-    //         name: customer.name,
-    //         email: customer.email,
-    //         contact: customer.contact,
-    //       },
-    //       notify: { sms: true, email: true },
-    //       reference_id,
-    //       notes,
-    //       callback_url: "https://yourdomain.com/payment/success",
-    //       callback_method: "get",
-    //     });
-    //     res.json({ payment_link: response.short_url, id: response.id });
-    //   } catch (error) {
-    //     res.status(500).json({ error: error.message });
-    //   }
-    // });
+    // app.post("/create-payment-link", async (req, res) => { ... });
 
-    // app.post('/api/webhook', express.json(), (req, res) => {
-    //   const event = req.body.event;
-
-    //   if (event === 'payment_link.paid') {
-    //     const paymentLinkId = req.body.payload.payment_link.entity.id;
-    //     const paymentId = req.body.payload.payment.entity.id;
-    //     // Find your local order by PaymentLinkId, update status to paid,
-    //     // Save payment details from webhook payload for reconciliation.
-    //   }
-
-    //   res.status(200).send('ok');
-    // });
+    // app.post('/api/webhook', express.json(), (req, res) => { ... });
 
     // Start the server
 
@@ -129,10 +96,7 @@ const startServer = async () => {
     //   key: fs.readFileSync("server.key"),
     //   cert: fs.readFileSync("server.cert"),
     // };
-
-    // https.createServer(options, app).listen(5000, () => {
-    //   console.log("✅ HTTPS Server running at https://localhost:5000");
-    // });
+    // https.createServer(options, app).listen(5000, () => { ... });
 
     app.get("/health", (req, res) => res.json({ status: "ok", time: new Date().toISOString() }));
 
