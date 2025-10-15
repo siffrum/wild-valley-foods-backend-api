@@ -3,23 +3,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 dotenv.config();
 import cookie from "cookie-parser";
+import { registerRoutes } from "./MainRoute/mainRoutes.js";
 import { dbConnection } from "./db/dbconnection.js";
-import router from "./route/auth/auth.routes.js";
-import licenseRouter from "./route/License/license.route.js";
-import moduleRouter from "./route/License/module.route.js";
-import bannerRoute from "./route/websiteResources/banner.route.js";
-import category from "./route/product/category.route.js";
-import product from "./route/product/product.route.js";
-import adminProduct from "./route/product/adminProduct.route.js";
-import customer from "./route/customer/customer.route.js";
-import contactus from "./route/contact-us/contact-us.route.js";
-import webhooks  from "./controller/customer-controller/webhooks.js"; 
-import Review  from "./route/product/review.js";
-import adminReview from "./route/product/review.admin.js";
-import testimonials from "./route/websiteResources/testimonial.route.js";
-import video from "./route/websiteResources/video.route.js"; 
-import fs from "fs";
-import https from "https";
 
 const app = express();
 
@@ -43,6 +28,8 @@ app.options('*', cors({
 
 // Middleware
 app.use(cookie());
+// ✅ Register all routes via single function
+registerRoutes(app, process.env.BASE_URL);
 
 // ⚡ Start server only after DB connection
 const startServer = async () => {
@@ -55,28 +42,6 @@ const startServer = async () => {
       req.models = models;
       next();
     });
-
-    // Routes
-    app.use(process.env.BASE_URL, router);
-    app.use(`${process.env.BASE_URL}/license`, licenseRouter);
-    app.use(`${process.env.BASE_URL}/module`, moduleRouter);
-    app.use(`${process.env.BASE_URL}/banner`, bannerRoute);
-    app.use(`${process.env.BASE_URL}`, category);
-    app.use(`${process.env.BASE_URL}/product`, product); // public routes
-    app.use(`${process.env.BASE_URL}/admin/product`, adminProduct); // admin routes
-    app.use(`${process.env.BASE_URL}/customer`,customer); // serve customer docs statically
-    app.use(`${process.env.BASE_URL}/contactus`,contactus);
-    app.use(`${process.env.BASE_URL}/webhooks`,  webhooks);
-    app.use(`${process.env.BASE_URL}/review`,  Review);
-    app.use(`${process.env.BASE_URL}/AdminReview`,  adminReview);
-    app.use(`${process.env.BASE_URL}/testimonial`,  testimonials);
-    app.use(`${process.env.BASE_URL}/video`,  video); 
-
-    // Local Database connection
-    // dbConnection(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS);
-
-    // Production database connection
-    // dbConnection(); // already handled above
 
     // Razorpay example (commented)
     // const razorpay = new Razorpay({
