@@ -161,20 +161,13 @@ export const getPaginatedReviewsForProduct = async (req, res) => {
     const skip = parseInt(req.query.skip, 10) || 0;
     const top = parseInt(req.query.top, 10) || 10;
 
-    const { count: total, rows: items } = await Review.findAndCountAll({
+    const result = await Review.findAll({
       where: { productId },
       offset: skip,
       limit: top,
       order: [["createdOnUTC", "DESC"]],
     });
-
-    return sendSuccess(res, {
-      items,
-      intResponse: total,
-      responseMessage: "Product reviews fetched successfully",
-      skip,
-      top,
-    });
+    return sendSuccess(res, result);
   } catch (err) {
     console.error("❌ GET PRODUCT REVIEWS ERROR:", err);
     return sendError(res, err.message);
