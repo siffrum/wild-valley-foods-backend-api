@@ -383,7 +383,7 @@ export const getProductCount = async (req, res) => {
     return sendError(res, err.message);
   }
 };
-
+//get all
 // ✅ GET PRODUCT BY ID
 export const getProductById = async (req, res) => {
   try {
