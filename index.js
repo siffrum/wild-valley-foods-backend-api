@@ -24,6 +24,7 @@ app.use(
       "Origin",
       "targetapitype", 
       "isdeveloperapk",
+      "appversion",
     ],
   })
 );
