@@ -2,7 +2,7 @@ import { Router } from "express";
 import {
   createCustomer,
   getCustomerById,
-  getAllCustomers,
+  getAllCustomersPaginated,
   updateCustomer,
   deleteCustomer,
 } from "../../controller/customer-controller/customer.controller.js";
@@ -10,7 +10,7 @@ import {
 const r = Router();
 
 r.post("/", createCustomer);
-r.get("/", getAllCustomers);
+r.get("/", getAllCustomersPaginated);
 r.get("/:id", getCustomerById);
 r.put("/:id", updateCustomer);
 r.delete("/:id", deleteCustomer);

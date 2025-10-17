@@ -8,42 +8,38 @@ import { sendSuccess, sendError } from "../../Helper/response.helper.js";
 // ✅ CREATE CUSTOMER
 export const createCustomer = async (req, res) => {
   try {
-    const { firstName, lastName, email, contact, addresses } = req.body;
+    const reqData = req.body.reqData || {}; // ✅ no JSON.parse
+    const { firstName, lastName, email, contact } = reqData;
 
-    // Step 1: Razorpay me create
+    // Step 0: Check if email already exists in DB
+    const existingCustomer = await Customer.findOne({ where: { email } });
+    if (existingCustomer) {
+      return sendError(res, "Customer with this email already exists", 400);
+    }
+
+    // Step 1: Create in Razorpay
     const razorpayCustomer = await razorpay.customers.create({
       name: `${firstName} ${lastName}`,
       email,
       contact,
     });
 
-    // Step 2: Apne DB me save
+    // Step 2: Save in DB
     const customer = await Customer.create({
-      firstName,
-      lastName,
-      email,
-      contact,
+      ...reqData,
       razorpayCustomerId: razorpayCustomer.id,
       createdBy: req.user?.id || null,
     });
 
-    // Step 3: Address agar diya ho to save
-    if (addresses && Array.isArray(addresses)) {
-      for (const addr of addresses) {
-        await CustomerAddress.create({
-          customerDetailId: customer.id,
-          ...addr,
-          createdBy: req.user?.id || null,
-        });
-      }
-    }
-
-    return sendSuccess(res, { ...customer.toJSON(), razorpay: razorpayCustomer }, 201);
+    const result = { ...customer.toJSON(), razorpay: razorpayCustomer };
+    return sendSuccess(res, result, 201);
   } catch (err) {
     console.error("❌ CREATE CUSTOMER ERROR:", err);
     return sendError(res, err.message);
   }
 };
+
+
 
 // ✅ GET CUSTOMER BY ID
 export const getCustomerById = async (req, res) => {
@@ -53,19 +49,27 @@ export const getCustomerById = async (req, res) => {
     });
     if (!customer) return sendError(res, "Customer not found", 404);
 
-    return sendSuccess(res, customer);
+    return sendSuccess(res, customer.toJSON());
   } catch (err) {
     return sendError(res, err.message);
   }
 };
 
-// ✅ GET ALL CUSTOMERS
-export const getAllCustomers = async (req, res) => {
+// ✅ GET ALL CUSTOMERS (Paginated)
+export const getAllCustomersPaginated = async (req, res) => {
   try {
+    const skip = parseInt(req.query.skip) || 0;
+    const top = parseInt(req.query.top) || 10;
+
     const customers = await Customer.findAll({
+      offset: skip,
+      limit: top,
       include: [{ model: CustomerAddress, as: "addresses" }],
+      order: [["createdAt", "DESC"]],
     });
-    return sendSuccess(res, customers);
+
+    const result = customers.map(c => c.toJSON());
+    return sendSuccess(res, result);
   } catch (err) {
     return sendError(res, err.message);
   }
@@ -74,33 +78,29 @@ export const getAllCustomers = async (req, res) => {
 // ✅ UPDATE CUSTOMER
 export const updateCustomer = async (req, res) => {
   try {
-    const { firstName, lastName, email, contact } = req.body;
+    const reqData = req.body.reqData || {};
+    const { firstName, lastName, email, contact } = reqData;
 
     const customer = await Customer.findByPk(req.params.id);
     if (!customer) return sendError(res, "Customer not found", 404);
 
-    // Razorpay update bhi karein
+    // Update in Razorpay
     await razorpay.customers.edit(customer.razorpayCustomerId, {
       name: `${firstName} ${lastName}`,
       email,
       contact,
     });
 
-    await customer.update({
-      firstName,
-      lastName,
-      email,
-      contact,
-      lastModifiedBy: req.user?.id || null,
-    });
+    reqData.lastModifiedBy = req.user?.id || null;
+    await customer.update(reqData);
 
-    return sendSuccess(res, customer);
+    return sendSuccess(res, customer.toJSON());
   } catch (err) {
     return sendError(res, err.message);
   }
 };
 
-// ✅ DELETE CUSTOMER (Note: Razorpay direct delete support nahi deta)
+// ✅ DELETE CUSTOMER
 export const deleteCustomer = async (req, res) => {
   try {
     const customer = await Customer.findByPk(req.params.id);

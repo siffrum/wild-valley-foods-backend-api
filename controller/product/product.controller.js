@@ -75,7 +75,8 @@ export const getProductsByCategoryId = async (req, res) => {
       offset: skip,
       limit: top,
       include: [
-        { model: Category, as: "category" },
+        { model: Category, as: "category",
+          attributes: ["id", "name"] },
         { model: Image, as: "images" },
       ],
     });
@@ -126,7 +127,8 @@ export const getNewArrivalProducts = async (req, res) => {
       order: [["createdOnUTC", "DESC"]], // newest first
       limit: 8,
       include: [
-        { model: Category, as: "category" },
+        { model: Category, as: "category",
+          attributes: ["id", "name"] },
         { model: Image, as: "images" },
       ],
     });
@@ -264,7 +266,8 @@ export const getRecentBestSellingProducts = async (req, res) => {
       order: [["createdOnUTC", "DESC"]], // newest best-sellers first
       limit: 8,
       include: [
-        { model: Category, as: "category" },
+        { model: Category, as: "category",
+          attributes: ["id", "name"] },
         { model: Image, as: "images" },
       ],
     });
@@ -329,7 +332,8 @@ export const updateBestSellingState = async (req, res) => {
 // ✅ GET ALL PRODUCTS
 export const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.findAll({ include: [{ model: Category, as: "category" }, { model: Image, as: "images" }] });
+    const products = await Product.findAll({ include: [{ model: Category, as: "category",
+          attributes: ["id", "name"] }, { model: Image, as: "images" }] });
     const result = products.map(prod => {
       const obj = prod.toJSON();
       obj.images = obj.images.map(img => convertImageToBase64(img.imagePath)).filter(Boolean);
@@ -350,7 +354,8 @@ export const getAllProductsByOdata = async (req, res) => {
     const { count: total, rows: items } = await Product.findAndCountAll({
       offset: skip,
       limit: top,
-      include: [{ model: Category, as: "category" }, { model: Image, as: "images" }],
+      include: [{ model: Category, as: "category",
+          attributes: ["id", "name"] }, { model: Image, as: "images" }],
     });
 
     const productsWithBase64 = items.map(prod => {
@@ -382,7 +387,8 @@ export const getProductCount = async (req, res) => {
 // ✅ GET PRODUCT BY ID
 export const getProductById = async (req, res) => {
   try {
-    const product = await Product.findByPk(req.params.id, { include: [{ model: Category, as: "category" }, { model: Image, as: "images" }] });
+    const product = await Product.findByPk(req.params.id, { include: [{ model: Category, as: "category",
+          attributes: ["id", "name"] }, { model: Image, as: "images" }] });
     if (!product) return sendError(res, "Product not found", 404);
 
     const result = product.toJSON();

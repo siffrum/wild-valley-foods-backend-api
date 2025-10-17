@@ -17,8 +17,6 @@ const createProductModel = (sequelize) => {
     sku: { type: DataTypes.STRING, allowNull: false, unique: true },
     stock: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     weight: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
-    shippingOptions: { type: DataTypes.JSONB, allowNull: true },
-    paymentOptions: { type: DataTypes.JSONB, allowNull: true },
     currency: { type: DataTypes.STRING, allowNull: true, defaultValue: "INR" },
     isBestSelling:{type:DataTypes.BOOLEAN,allowNull:false,defaultValue:false},
     // 🔹 Razorpay-specific
