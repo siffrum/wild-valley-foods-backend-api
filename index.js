@@ -22,7 +22,8 @@ app.use(
       "X-Requested-With",
       "Accept",
       "Origin",
-      "targetapitype", // include your custom header
+      "targetapitype", 
+      "isdeveloperapk",
     ],
   })
 );
