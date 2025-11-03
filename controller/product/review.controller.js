@@ -242,13 +242,17 @@ export const approveOrRejectReview = async (req, res) => {
       return sendError(res, "Unauthorized access — Admin only", 403);
     }
 
-    const { id } = req.params; // Review ID from URL
-    const { isApproved } = req.body; // Expected: true or false
+    const { id } = req.params; // Review ID
+    const reqData = req.body.reqData ? req.body.reqData : {};
+    const { isApproved } = reqData; // ✅ Now coming from reqDat
 
-    // ✅ Validate input
-    if (typeof isApproved !== "boolean") {
-      return sendError(res, "isApproved must be a boolean (true/false)", 400);
-    }
+// Convert string to boolean if needed
+if (isApproved === "true") isApproved = true;
+if (isApproved === "false") isApproved = false;
+
+if (typeof isApproved !== "boolean") {
+  return sendError(res, "isApproved must be a boolean (true/false)", 400);
+}
 
     // ✅ Find review
     const review = await Review.findByPk(id);
@@ -264,7 +268,6 @@ export const approveOrRejectReview = async (req, res) => {
 
     const statusMessage = isApproved ? "approved" : "rejected";
 
-    // ✅ Respond with updated data
     return sendSuccess(res, {
       ...review.toJSON(),
       responseMessage: `Review has been successfully ${statusMessage}`,
@@ -274,4 +277,5 @@ export const approveOrRejectReview = async (req, res) => {
     return sendError(res, err.message);
   }
 };
+
 
