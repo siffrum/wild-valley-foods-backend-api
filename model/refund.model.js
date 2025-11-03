@@ -19,28 +19,36 @@ const refundModel = (sequelize) => {
         allowNull: false,
       },
 
-      productPaymentId: {
+      // productPaymentId: {
+      //   type: DataTypes.INTEGER,
+      //   allowNull: false,
+      //   references: {
+      //     model: "ProductPayment", // ✅ must match model name
+      //     key: "id",
+      //   },
+      //   onDelete: "CASCADE",
+      // },
+      // productId: {
+      //   type: DataTypes.INTEGER,
+      //   allowNull: false,
+      //   references: {
+      //     model: "Product", // ✅ must match model name
+      //     key: "id",
+      //   },
+      // },
+      // customerDetailId: {
+      //   type: DataTypes.INTEGER,
+      //   allowNull: false,
+      //   references: {
+      //     model: "CustomerDetail", // ✅ must match model name
+      //     key: "id",
+      //   },
+      // },
+      razorPayOrderId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "ProductPayment", // ✅ must match model name
-          key: "id",
-        },
-        onDelete: "CASCADE",
-      },
-      productId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: "Product", // ✅ must match model name
-          key: "id",
-        },
-      },
-      customerDetailId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: "CustomerDetail", // ✅ must match model name
+          model: "Order", // ✅ must match model name
           key: "id",
         },
       },
@@ -82,13 +90,15 @@ const refundModel = (sequelize) => {
 };
 
 // Refund associations
-ProductPayment.hasMany(Refund, { foreignKey: "productPaymentId", as: "refunds" });
-Refund.belongsTo(ProductPayment, { foreignKey: "productPaymentId", as: "payment" });
+// ProductPayment.hasMany(Refund, { foreignKey: "productPaymentId", as: "refunds" });
+// Refund.belongsTo(ProductPayment, { foreignKey: "productPaymentId", as: "payment" });
 
-Product.hasMany(Refund, { foreignKey: "productId", as: "refunds" });
-Refund.belongsTo(Product, { foreignKey: "productId", as: "product" });
+//Add here one to one relationm between refund and order
 
-CustomerDetail.hasMany(Refund, { foreignKey: "customerDetailId", as: "refunds" });
-Refund.belongsTo(CustomerDetail, { foreignKey: "customerDetailId", as: "user" });
+// Product.hasMany(Refund, { foreignKey: "productId", as: "refunds" });
+// Refund.belongsTo(Product, { foreignKey: "productId", as: "product" });
+
+// CustomerDetail.hasMany(Refund, { foreignKey: "customerDetailId", as: "refunds" });
+// Refund.belongsTo(CustomerDetail, { foreignKey: "customerDetailId", as: "user" });
 
 export default refundModel;

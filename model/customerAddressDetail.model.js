@@ -1,8 +1,6 @@
 import { DataTypes } from "sequelize";
 
 const customerAddressDetailModel = (sequelize) => {
-  const CustomerDetail = sequelize.models.CustomerDetail; // ✅ get CustomerDetail model
-
   const CustomerAddressDetail = sequelize.define(
     "CustomerAddressDetail",
     {
@@ -15,10 +13,10 @@ const customerAddressDetailModel = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "CustomerDetails", // must match table name
+          model: "CustomerDetails",
           key: "id",
         },
-        onDelete: "CASCADE", // ✅ delete addresses if user deleted
+        onDelete: "CASCADE",
       },
       addressLine1: {
         type: DataTypes.STRING,
@@ -66,18 +64,17 @@ const customerAddressDetailModel = (sequelize) => {
     }
   );
 
-  // ✅ Associations
-  if (CustomerDetail) {
-    CustomerDetail.hasMany(CustomerAddressDetail, {
+  // ✅ Associations (define after all models are loaded)
+  CustomerAddressDetail.associate = (models) => {
+    models.CustomerDetail.hasMany(models.CustomerAddressDetail, {
       foreignKey: "customerDetailId",
       as: "addresses",
     });
-
-    CustomerAddressDetail.belongsTo(CustomerDetail, {
+    models.CustomerAddressDetail.belongsTo(models.CustomerDetail, {
       foreignKey: "customerDetailId",
       as: "customer",
     });
-  }
+  };
 
   return CustomerAddressDetail;
 };

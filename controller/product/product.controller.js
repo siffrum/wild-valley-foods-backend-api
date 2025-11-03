@@ -3,6 +3,95 @@ import { sendSuccess, sendError } from "../../Helper/response.helper.js";
 import { convertImageToBase64, deleteFileSafe } from "../../Helper/multer.helper.js";
 import { Op } from "sequelize";
 import razorpay from "../../route/customer/razorpay.js";
+
+export const createProduct = async (req, res) => {
+  try {
+    if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
+
+    const reqData = JSON.parse(req.body.reqData || "{}");
+    reqData.createdBy = req.user.id;
+    reqData.lastModifiedBy = req.user.id;
+
+    const razorpayItem = await razorpay.items.create({
+      name: reqData.name,
+      description: reqData.description,
+      amount: Math.round(reqData.price * 100),
+      currency: reqData.currency || "INR",
+      hsn_code: reqData.hsnCode,
+      tax_rate: reqData.taxRate,
+      unit: reqData.unit,
+    });
+
+    const product = await Product.create({
+      ...reqData,
+      razorpayItemId: razorpayItem.id,
+    });
+
+    if (req.files?.length) {
+      for (const f of req.files) {
+        await Image.create({ imagePath: f.path, productId: product.id });
+      }
+    }
+
+    const final = await Product.findByPk(product.id, {
+      include: { model: Image, as: "images", order: [["createdOnUTC", "ASC"]] },
+    });
+
+    final.images = final.images.map((x) => convertImageToBase64(x.imagePath));
+    return sendSuccess(res, final, 201);
+  } catch (e) {
+    return sendError(res, e.message);
+  }
+};
+
+export const updateProduct = async (req, res) => {
+  try {
+    if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
+
+    const reqData = JSON.parse(req.body.reqData || "{}");
+    reqData.lastModifiedBy = req.user.id;
+
+    const product = await Product.findByPk(req.params.id);
+    if (!product) return sendError(res, "Not found", 404);
+
+    await product.update(reqData);
+
+    const newFiles = req.files || [];
+    if (newFiles.length > 0) {
+      // Fetch existing images ordered by creation time (adjusted timestamp column)
+      const existing = await Image.findAll({
+        where: { productId: product.id },
+        order: [["createdOnUTC", "ASC"]],
+      });
+
+      const minReplace = Math.min(existing.length, newFiles.length);
+
+      // Replace first minReplace images
+      for (let i = 0; i < minReplace; i++) {
+        const oldImg = existing[i];
+        if (oldImg?.imagePath) deleteFileSafe(oldImg.imagePath);
+        oldImg.imagePath = newFiles[i].path;
+        await oldImg.save();
+      }
+
+      // Append any extra new images
+      for (let i = minReplace; i < newFiles.length; i++) {
+        await Image.create({ imagePath: newFiles[i].path, productId: product.id });
+      }
+    }
+
+    const updated = await Product.findByPk(req.params.id, {
+      include: { model: Image, as: "images", order: [["createdOnUTC", "ASC"]] },
+    });
+
+    updated.images = updated.images.map((x) => convertImageToBase64(x.imagePath));
+    return sendSuccess(res, updated);
+  } catch (e) {
+    return sendError(res, e.message);
+  }
+};
+
+
 // ✅ SEARCH PRODUCTS WITH ODATA
 
 export const searchProductsOdata = async (req, res) => {
@@ -148,116 +237,7 @@ export const getNewArrivalProducts = async (req, res) => {
   }
 };
 
-// ✅ CREATE PRODUCT
-export const createProduct = async (req, res) => {
-  try {
-    if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
 
-    const reqData = req.body.reqData ? JSON.parse(req.body.reqData) : {};
-    reqData.createdBy = req.user.id;
-    reqData.lastModifiedBy = req.user.id;
-
-    // Step 1: Create product in Razorpay
-    const razorpayItem = await razorpay.items.create({
-      name: reqData.name,
-      description: reqData.description,
-      amount: Math.round(parseFloat(reqData.price) * 100), // paise
-      currency: reqData.currency || "INR",
-      hsn_code: reqData.hsnCode,
-      tax_rate: reqData.taxRate,
-      unit: reqData.unit,
-    });
-
-    // Step 2: Save in DB
-    const product = await Product.create({
-      ...reqData,
-      razorpayItemId: razorpayItem.id,
-    });
-
-    // Step 3: Save Images
-    if (req.files && req.files.length) {
-      for (const file of req.files) {
-        await Image.create({ imagePath: file.path, productId: product.id });
-      }
-    }
-
-    const productWithImages = await Product.findByPk(product.id, {
-      include: [{ model: Image, as: "images" }],
-    });
-
-    const result = productWithImages.toJSON();
-    result.images = result.images.map(img => convertImageToBase64(img.imagePath)).filter(Boolean);
-
-    return sendSuccess(res, { ...result, razorpay: razorpayItem }, 201);
-  } catch (err) {
-    console.error("❌ CREATE PRODUCT ERROR:", err);
-    return sendError(res, err.message);
-  }
-};
-export const updateProduct = async (req, res) => {
-  try {
-    if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
-
-    const reqData = req.body.reqData ? JSON.parse(req.body.reqData) : {};
-    reqData.lastModifiedBy = req.user.id;
-
-    const product = await Product.findByPk(req.params.id);
-    if (!product) return sendError(res, "Product not found", 404);
-
-    // Step 1: Update Razorpay item if exists
-    if (product.razorpayItemId) {
-      await razorpay.items.edit(product.razorpayItemId, {
-        name: reqData.name || product.name,
-        description: reqData.description || product.description,
-        amount: reqData.price
-          ? Math.round(parseFloat(reqData.price) * 100)
-          : undefined,
-        currency: reqData.currency || product.currency,
-        hsn_code: reqData.hsnCode || product.hsnCode,
-        tax_rate: reqData.taxRate || product.taxRate,
-        unit: reqData.unit || product.unit,
-      });
-    }
-
-    // Step 2: Update product fields in DB
-    await product.update(reqData);
-
-    // Step 3: Handle image updates (delete old and save new)
-    if (req.files && req.files.length > 0) {
-      const existingImages = await Image.findAll({
-        where: { productId: product.id },
-      });
-
-      // Delete old image files
-      for (const img of existingImages) {
-        deleteFileSafe(img.imagePath);
-      }
-
-      // Remove old image records
-      await Image.destroy({ where: { productId: product.id } });
-
-      // Add new image records
-      for (const file of req.files) {
-        await Image.create({ imagePath: file.path, productId: product.id });
-      }
-    }
-
-    // Step 4: Fetch updated product with images
-    const updatedProduct = await Product.findByPk(req.params.id, {
-      include: [{ model: Image, as: "images" }],
-    });
-
-    const result = updatedProduct.toJSON();
-    result.images = result.images
-      .map((img) => convertImageToBase64(img.imagePath))
-      .filter(Boolean);
-
-    return sendSuccess(res, result);
-  } catch (err) {
-    console.error("❌ UPDATE PRODUCT ERROR:", err);
-    return sendError(res, err.message);
-  }
-};
 // ✅ NEW: Get 8 Recently Added Best-Selling Products
 export const getRecentBestSellingProducts = async (req, res) => {
   try {

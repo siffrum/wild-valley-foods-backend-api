@@ -74,7 +74,7 @@ export const getContactUsCount = async (req, res) => {
     return sendError(res, err.message);
   }
 };
-
+ 
 // ✅ UPDATE CONTACTUS
 // ✅ UPDATE CONTACTUS
 export const updateContactUs = async (req, res) => {

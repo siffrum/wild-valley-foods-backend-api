@@ -27,7 +27,7 @@ const customerDetailModel = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      razorpayCustomerId: {   // ✅ Razorpay Customer ID
+      razorpayCustomerId: {
         type: DataTypes.STRING,
         allowNull: true,
       },
@@ -52,6 +52,7 @@ const customerDetailModel = (sequelize) => {
       tableName: "CustomerDetails",
     }
   );
+
   return CustomerDetail;
 };
 

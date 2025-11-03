@@ -1,50 +1,51 @@
 import express from "express";
 import {
-  createCategory,
-  updateCategory,
-  deleteCategory,
-  getAllCategories,
-  getCategoryById,
-  getAllCategoriesPaginated,
-  getCategoryCount,
+createCategory,
+updateCategory,
+deleteCategory,
+getAllCategories,
+getCategoryById,
+getAllCategoriesPaginated,
+getCategoryCount,
 } from "../../controller/product/category.controller.js";
 import authenticate from "../../middlewares/auth/auth.js";
 import {
-  uploadCategory,
-  compressUploadedImage,
+uploadCategory,
+compressUploadedImage,
 } from "../../Helper/multer.helper.js";
 
 const router = express.Router();
 
-// ✅ Public Routes
+// Public Routes
 router.get("/categories/paginated", getAllCategoriesPaginated);
 router.get("/categories", getAllCategories);
 router.get("/categories/count", getCategoryCount);
 router.get("/categoryById/:id", getCategoryById);
 
-// ✅ Admin Routes
+// Admin — Create Category
 router.post(
-  "/admin/createcategory",
-  authenticate,
-  (req, res, next) => {
-    req.uploadFolder = "category-icons";
-    next();
-  },
-  uploadCategory.single("category_icon"),
-  compressUploadedImage, // ✅ Compress and convert uploaded icon
-  createCategory
+"/admin/createcategory",
+authenticate,
+(req, res, next) => {
+req.uploadFolder = "uploads/category-icons";
+next();
+},
+uploadCategory.single("category_icon"),
+compressUploadedImage,
+createCategory
 );
 
+// Admin — Update Category
 router.put(
-  "/admin/updatecategoryById/:id",
-  authenticate,
-  (req, res, next) => {
-    req.uploadFolder = "category-icons";
-    next();
-  },
-  uploadCategory.single("category_icon"),
-  compressUploadedImage, // ✅ Compress and convert uploaded icon
-  updateCategory
+"/admin/updatecategoryById/:id",
+authenticate,
+(req, res, next) => {
+req.uploadFolder = "uploads/category-icons";
+next();
+},
+uploadCategory.single("category_icon"),
+compressUploadedImage,
+updateCategory
 );
 
 router.delete("/admin/deletecategoryById/:id", authenticate, deleteCategory);

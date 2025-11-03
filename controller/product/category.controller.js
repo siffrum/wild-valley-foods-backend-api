@@ -3,64 +3,65 @@ import { Product, Image, categories as Category } from "../../db/dbconnection.js
 import { sendSuccess, sendError } from "../../Helper/response.helper.js";
 import { convertImageToBase64, deleteFileSafe } from "../../Helper/multer.helper.js";
 // import Image from "../../model/image.model.js";
-// ✅ CREATE CATEGORY
+/**
+
+CREATE CATEGORY
+*/
 export const createCategory = async (req, res) => {
-  try {
-    if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
-    const reqData = req.body.reqData ? JSON.parse(req.body.reqData) : {};
-    reqData.createdBy = req.user.id;
-    reqData.lastModifiedBy=req.user.id;
+try {
+if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
 
-    const category = await Category.create(reqData);
+const reqData = JSON.parse(req.body.reqData || "{}");
+reqData.createdBy = req.user.id;
+reqData.lastModifiedBy = req.user.id;
 
-    if (req.file) {
-      category.category_icon = req.file.path;
-      await category.save();
-    }
+const category = await Category.create(reqData);
 
-    const result = category.toJSON();
-    result.category_icon_base64 = result.category_icon ? convertImageToBase64(result.category_icon) : null;
-    return sendSuccess(res, result, 201);
-  } catch (err) {
-    console.error("❌ CREATE CATEGORY ERROR:", err);
-    return sendError(res, err.message);
-  }
+if (req.file) {
+category.category_icon = req.file.path;
+await category.save();
+}
+
+const json = category.toJSON();
+json.category_icon_base64 = convertImageToBase64(category.category_icon);
+return sendSuccess(res, json, 201);
+} catch (e) {
+return sendError(res, e.message);
+}
 };
-// ✅ UPDATE CATEGORY
+
+/**
+
+UPDATE CATEGORY
+
+If a new icon is uploaded, delete old and replace
+*/
 export const updateCategory = async (req, res) => {
-  try {
-    if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
+try {
+if (req.user.role !== "Admin") return sendError(res, "Unauthorized", 403);
 
-    const reqData = req.body.reqData ? JSON.parse(req.body.reqData) : {};
-    reqData.lastModifiedBy = req.user.id;
+const reqData = JSON.parse(req.body.reqData || "{}");
+reqData.lastModifiedBy = req.user.id;
 
-    const category = await Category.findByPk(req.params.id);
-    if (!category) return sendError(res, "Category not found", 404);
+const category = await Category.findByPk(req.params.id);
+if (!category) return sendError(res, "Category not found", 404);
 
-    // Update category details first
-    await category.update(reqData);
+await category.update(reqData);
 
-    // If new icon uploaded → delete old and save new
-    if (req.file) {
-      if (category.category_icon) {
-        deleteFileSafe(category.category_icon);
-      }
-      category.category_icon = req.file.path;
-      await category.save();
-    }
+if (req.file) {
+if (category.category_icon) deleteFileSafe(category.category_icon);
+category.category_icon = req.file.path;
+await category.save();
+}
 
-    // Prepare final response
-    const result = category.toJSON();
-    result.category_icon_base64 = category.category_icon
-      ? convertImageToBase64(category.category_icon)
-      : null;
-
-    return sendSuccess(res, result);
-  } catch (err) {
-    console.error("❌ UPDATE CATEGORY ERROR:", err);
-    return sendError(res, err.message);
-  }
+const json = category.toJSON();
+json.category_icon_base64 = convertImageToBase64(category.category_icon);
+return sendSuccess(res, json);
+} catch (e) {
+return sendError(res, e.message);
+}
 };
+
 
 // ✅ GET ALL CATEGORIES PAGINATED
 export const getAllCategoriesPaginated = async (req, res) => {

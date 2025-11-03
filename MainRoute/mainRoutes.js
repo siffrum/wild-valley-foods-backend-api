@@ -12,6 +12,7 @@ import Review  from "../route/product/review.js"
 import adminReview from "../route/product/review.admin.js"
 import testimonials from "../route/websiteResources/testimonial.route.js";
 import video from "../route/websiteResources/video.route.js"; 
+import orderRoute from "../route/Order/order.route.js"
 
 /**
  * Registers all routes with base paths
@@ -33,4 +34,6 @@ export const registerRoutes = (app, baseUrl = "") => {
   app.use(`${baseUrl}/AdminReview`, adminReview);
   app.use(`${baseUrl}/testimonial`, testimonials);
   app.use(`${baseUrl}/video`, video);
+  app.use(`${baseUrl}/order`,orderRoute)
+
 };

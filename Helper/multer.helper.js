@@ -4,82 +4,156 @@ import multer from "multer";
 import sharp from "sharp";
 
 /**
- * Configure multer storage (dynamic folder creation)
+ * Configure multer storage (dynamic folder creation inside uploads/)
  */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const folder = req.uploadFolder || "uploads/others";
-    // ✅ Ensure folder always lives inside uploads/
-    const fullFolder = folder.startsWith("uploads")
-      ? folder
-      : path.join("uploads", folder);
+    const fullFolder = folder.startsWith("uploads") ? folder : path.join("uploads", folder);
     const uploadDir = path.join(process.cwd(), fullFolder);
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    const fileName = `${file.fieldname}_${Date.now()}${ext}`;
+    const baseName = path.basename(file.originalname, ext).replace(/\s+/g, "_");
+    const fileName = `${file.fieldname}_${Date.now()}_${baseName}${ext}`;
     cb(null, fileName);
   },
 });
 
 /**
- * Common file filter for all uploaders
+ * Common file filter for all uploaders (images only)
  */
 const fileFilter = (req, file, cb) => {
-  const allowedExt = [
-    ".jpg", ".jpeg", ".png", ".webp",
-    ".gif", ".bmp", ".tiff", ".svg"
-  ];
+  const allowedExt = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".tiff", ".svg"];
   const allowedMime = [
-    "image/jpeg", "image/png", "image/webp",
-    "image/gif", "image/bmp", "image/tiff",
-    "image/svg+xml"
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "image/bmp",
+    "image/tiff",
+    "image/svg+xml",
   ];
 
   const ext = path.extname(file.originalname).toLowerCase();
   const mime = file.mimetype.toLowerCase();
 
   if (!allowedExt.includes(ext) || !allowedMime.includes(mime)) {
-    console.error(`❌ Blocked file: ${file.originalname} (${mime})`);
     return cb(new Error("Unsupported file type"));
   }
   cb(null, true);
 };
 
 /**
- * Compress and convert uploaded image to WebP
- * Retains visual quality but reduces size dramatically
+ * Internal utility to iteratively compress an image to <= maxKB as WebP.
+ *
+ * Strategy: try decreasing quality and width until size threshold is met.
+ *
+ * This mirrors community-recommended approach for size-constrained output.
  */
-const compressAndConvertImage = async (filePath) => {
+const compressToWebpUnderKB = async (
+  inputPath,
+  {
+    maxKB = 100,
+    startQuality = 80,
+    minQuality = 10,
+    qualityStep = 15,
+    startWidth = 1200,
+    minWidth = 500,
+    widthStep = 200,
+    effort = 6,
+  } = {}
+) => {
+  const ext = path.extname(inputPath).toLowerCase();
+  const base = inputPath.slice(0, -ext.length);
+  let quality = startQuality;
+  let width = startWidth;
+  let finalOutput = "";
+  let lastAttemptPath = "";
+
+  while (quality >= minQuality) {
+    const attemptPath = `${base}_q${quality}.webp`;
+
+    await sharp(inputPath)
+      .rotate()
+      .resize({ width, withoutEnlargement: true })
+      .webp({ quality, effort })
+      .toFile(attemptPath);
+
+    const sizeKB = Math.round(fs.statSync(attemptPath).size / 1024);
+    if (sizeKB <= maxKB) {
+      finalOutput = attemptPath;
+      break;
+    }
+    lastAttemptPath = attemptPath;
+    quality -= qualityStep;
+    width = Math.max(minWidth, width - widthStep);
+  }
+
+  if (!finalOutput) finalOutput = lastAttemptPath;
+
+  // Remove the original file
+  if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
+
+  // Cleanup temp attempts except final
+  const dir = path.dirname(base);
+  const baseName = path.basename(base);
+  fs.readdirSync(dir)
+    .filter((f) => f.startsWith(baseName) && f.endsWith(".webp") && path.join(dir, f) !== finalOutput)
+    .forEach((f) => fs.unlinkSync(path.join(dir, f)));
+
+  return finalOutput;
+};
+
+/**
+ * General compress/convert for products and categories
+ */
+export const compressAndConvertImage = async (filePath) => {
   try {
-    const ext = path.extname(filePath).toLowerCase();
-    const outputPath = filePath.replace(ext, ".webp");
-
-    await sharp(filePath)
-      .rotate() // auto-orient
-      .resize({
-        width: 1920, // ✅ maximum width to prevent large uploads
-        withoutEnlargement: true,
-      })
-      .webp({
-        quality: 85, // ✅ 80–90 = high quality with small size
-        effort: 4,   // compression effort (1–6)
-      })
-      .toFile(outputPath);
-
-    fs.unlinkSync(filePath); // remove original
-    console.log(`✅ Compressed & converted → ${outputPath}`);
-    return outputPath;
-  } catch (error) {
-    console.error("❌ Image compression failed:", error);
+    // Always convert to .webp if not already, and ensure <= 100KB
+    return await compressToWebpUnderKB(filePath, {
+      maxKB: 100,
+      startQuality: 80,
+      minQuality: 10,
+      qualityStep: 15,
+      startWidth: 1200,
+      minWidth: 500,
+      widthStep: 200,
+      effort: 6,
+    });
+  } catch (err) {
+    console.error("Compression failed:", err);
     return filePath;
   }
 };
 
 /**
- * Multer uploaders (can define per module)
+ * Separate compress/convert for banners (isolated for future tuning)
+ *
+ * Currently uses same thresholds (<= 100KB) but you can raise widths or quality later if banners need higher fidelity.
+ */
+export const compressAndConvertBannerImage = async (filePath) => {
+  try {
+    return await compressToWebpUnderKB(filePath, {
+      maxKB: 100,
+      startQuality: 85,
+      minQuality: 10,
+      qualityStep: 15,
+      startWidth: 1600,
+      minWidth: 600,
+      widthStep: 200,
+      effort: 6,
+    });
+  } catch (err) {
+    console.error("Banner compression failed:", err);
+    return filePath;
+  }
+};
+
+/**
+ * Multer uploaders
  */
 export const uploadBanner = multer({
   storage,
@@ -100,63 +174,82 @@ export const uploadCategory = multer({
 });
 
 /**
- * Middleware to compress uploaded image (for single file uploads)
+ * Middleware to compress uploaded image (single)
  */
 export const compressUploadedImage = async (req, res, next) => {
   try {
     if (!req.file) return next();
 
-    const compressedPath = await compressAndConvertImage(req.file.path);
+    const originalPath = req.file.path;
+    const compressedPath = await compressAndConvertImage(originalPath);
+
     req.file.path = compressedPath;
     req.file.filename = path.basename(compressedPath);
+    req.body.imagePath = compressedPath;
+
     next();
   } catch (err) {
-    console.error("❌ Error compressing uploaded image:", err);
+    console.error("Image compression error:", err);
     next();
   }
 };
 
 /**
- * Middleware to compress all uploaded images (for multiple file uploads)
+ * Middleware to compress uploaded banner image (single, separate params)
+ */
+export const compressUploadedBannerImage = async (req, res, next) => {
+  try {
+    if (!req.file) return next();
+
+    const originalPath = req.file.path;
+    const compressedPath = await compressAndConvertBannerImage(originalPath);
+
+    req.file.path = compressedPath;
+    req.file.filename = path.basename(compressedPath);
+    req.body.imagePath = compressedPath;
+
+    next();
+  } catch (err) {
+    console.error("Banner image compression error:", err);
+    next();
+  }
+};
+
+/**
+ * Middleware to compress multiple images
  */
 export const compressMultipleImages = async (req, res, next) => {
   try {
     if (!req.files || !req.files.length) return next();
 
-    for (let file of req.files) {
+    for (const file of req.files) {
       const compressedPath = await compressAndConvertImage(file.path);
       file.path = compressedPath;
       file.filename = path.basename(compressedPath);
     }
     next();
   } catch (err) {
-    console.error("❌ Error compressing multiple images:", err);
+    console.error("Error compressing multiple images:", err);
     next();
   }
 };
 
 /**
- * Convert image file path to base64 string
+ * Convert image path to base64
  */
 export const convertImageToBase64 = (filePath) => {
   try {
     if (!filePath) return null;
-    const absPath = path.isAbsolute(filePath)
-      ? filePath
-      : path.join(process.cwd(), filePath);
+    const absPath = path.isAbsolute(filePath) ? filePath : path.join(process.cwd(), filePath);
 
-    if (!fs.existsSync(absPath)) {
-      console.error("❌ File not found:", absPath);
-      return null;
-    }
+    if (!fs.existsSync(absPath)) return null;
 
     const buffer = fs.readFileSync(absPath);
     let ext = path.extname(absPath).substring(1).toLowerCase();
     if (ext === "jpg") ext = "jpeg";
 
     return `data:image/${ext};base64,${buffer.toString("base64")}`;
-  } catch (err) {
-    console.error("❌ Error converting image to base64:", err);
+  } catch {
     return null;
   }
 };
@@ -167,14 +260,13 @@ export const convertImageToBase64 = (filePath) => {
 export const deleteFileSafe = (filePath) => {
   try {
     if (!filePath) return;
-    const absPath = path.isAbsolute(filePath)
-      ? filePath
-      : path.join(process.cwd(), filePath);
+    const absPath = path.isAbsolute(filePath) ? filePath : path.join(process.cwd(), filePath);
     if (fs.existsSync(absPath)) {
       fs.unlinkSync(absPath);
-      console.log(`🗑️ Deleted: ${absPath}`);
     }
   } catch (err) {
-    console.error("❌ Error deleting file:", err);
+    console.error("Error deleting file:", err);
   }
 };
+
+export { storage, fileFilter };

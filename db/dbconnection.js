@@ -11,13 +11,15 @@ import createCategoryModel from "../model/category.model.js";
 import createProductModel from "../model/product.model.js";
 import createImageModel from "../model/image.model.js";
 import customerAddressDetailModel from "../model/customerAddressDetail.model.js";
-import createProductPaymentModel from "../model/productpayment.model.js"; // ✅ new
+import createProductPaymentModel from "../model/productpayment.model.js";
 import customerDetailModel from "../model/customerDetail.model.js";
-import ContactUsModel  from "../model/contactUs.model.js";  // contact us model
+import ContactUsModel from "../model/contactUs.model.js";
 import createReviewModel from "../model/review.model.js";
 import createTestimonialModel from "../model/testmonials.model.js";
-import createVideoModel from "../model/video.model.js"; 
-
+import createVideoModel from "../model/video.model.js";
+import createOrderModel from "../model/order.model.js";
+import createOrderRecordModel from "../model/orderRecord.model.js";
+//import refundModel from "../model/refund.model.js";
 
 // Variables
 let User = null;
@@ -27,34 +29,22 @@ let Banner = null;
 let categories = null;
 let Product = null;
 let Image = null;
-let CustomerDetail = null;        // ✅ new
-let ProductPayment = null;    // ✅ new
+let CustomerDetail = null;
 let CustomerAddressDetail = null;
-let ContactUs = null; // contact us model
+let ProductPayment = null;
+let ContactUs = null;
 let Review = null;
 let Testimonial = null;
 let Video = null;
+let Order = null;
+let OrderRecord = null;
+let Refund = null;
 
-// Local DB connection
-// export const dbConnection = async (database, username, password) => {
-//   const sequelize = new Sequelize(database, username, password, {
-//     host: "localhost",
-//     dialect: "postgres",
-//   });
-
-// Production DB connection (commented)
-export const dbConnection = async () => {
-  console.log("DATABASE_URL:", process.env.DATABASE_URL);
-  const sequelize = new Sequelize(process.env.DATABASE_URL, {
+// DB Connection
+export const dbConnection = async (database, username, password) => {
+  const sequelize = new Sequelize(database, username, password, {
+    host: "localhost",
     dialect: "postgres",
-    protocol: "postgres",
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false, // Required for Railway PostgreSQL SSL
-      },
-    },
-    logging: false, // optional: hide SQL logs
   });
 
   try {
@@ -69,15 +59,33 @@ export const dbConnection = async () => {
     categories = await createCategoryModel(sequelize);
     Product = await createProductModel(sequelize);
     Image = await createImageModel(sequelize);
-    CustomerDetail = await customerDetailModel(sequelize);               // ✅ new
-    ProductPayment = await createProductPaymentModel(sequelize); // ✅ new
+    CustomerDetail = await customerDetailModel(sequelize);
     CustomerAddressDetail = await customerAddressDetailModel(sequelize);
-    ContactUs = await ContactUsModel(sequelize); // contact us model
+    ProductPayment = await createProductPaymentModel(sequelize);
+    ContactUs = await ContactUsModel(sequelize);
     Review = await createReviewModel(sequelize);
     Testimonial = await createTestimonialModel(sequelize);
     Video = await createVideoModel(sequelize);
+    Order = await createOrderModel(sequelize);
+    OrderRecord = await createOrderRecordModel(sequelize);
+    //Refund = await refundModel(sequelize); 
 
-    // Sync database
+    // Associations
+    Order.hasMany(OrderRecord, { foreignKey: "orderId", as: "items" });
+    OrderRecord.belongsTo(Order, { foreignKey: "orderId", as: "order" });
+
+    CustomerDetail.hasMany(CustomerAddressDetail, {
+      foreignKey: "customerDetailId",
+      as: "addresses",
+    });
+    CustomerAddressDetail.belongsTo(CustomerDetail, {
+      foreignKey: "customerDetailId",
+      as: "customer",
+    });
+//Check this
+    
+
+    // Database Sync
     await sequelize.sync({ alter: true });
     console.log("✅ Connection has been established successfully.");
 
@@ -91,18 +99,21 @@ export const dbConnection = async () => {
         categories,
         Product,
         Image,
-        CustomerDetail,       // ✅ export
+        CustomerDetail,
         CustomerAddressDetail,
-        ProductPayment,   // ✅ export
-        ContactUs, // contact us model
+        ProductPayment,
+        ContactUs,
         Review,
         Testimonial,
-        Video
-      }
+        Video,
+        Order,
+        OrderRecord,
+        //Refund
+      },
     };
   } catch (error) {
     console.error("❌ Unable to connect to the database:", error);
-    throw error; // important: stop server if DB fails
+    throw error;
   }
 };
 
@@ -115,11 +126,14 @@ export {
   categories,
   Image,
   Product,
-  CustomerDetail,       // ✅ export
+  CustomerDetail,
   CustomerAddressDetail,
-  ProductPayment,   // ✅ export
-  ContactUs, // contact us model
+  ProductPayment,
+  ContactUs,
   Review,
   Testimonial,
-  Video
+  Video,
+  Order,
+  OrderRecord,
+  //Refund
 };
