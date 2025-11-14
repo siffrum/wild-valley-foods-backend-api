@@ -7,12 +7,11 @@ import {
   deleteCustomer,
 } from "../../controller/customer-controller/customer.controller.js";
 
-const r = Router();
+const router = Router();
+router.post("/create", createCustomer);
+router.get("/getall/paginated", getAllCustomersPaginated);
+router.get("/getbyid/:id", getCustomerById);
+router.put("/update/:id", updateCustomer);
+router.delete("/delete/:id", deleteCustomer);
 
-r.post("/", createCustomer);
-r.get("/", getAllCustomersPaginated);
-r.get("/:id", getCustomerById);
-r.put("/:id", updateCustomer);
-r.delete("/:id", deleteCustomer);
-
-export default r;
+export default router;
