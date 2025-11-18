@@ -2,51 +2,83 @@ import { Order, OrderRecord, CustomerDetail, Product } from "../../db/dbconnecti
 import razorpay from "../../route/customer/razorpay.js";
 import crypto from "crypto";
 import { sendSuccess, sendError } from "../../Helper/response.helper.js";
+import { generateOrderPaymentLink } from "../../Helper/razorpay.payment.helper.js";
 
-// ✅ Create new order
 export const createOrder = async (req, res) => {
   try {
-    const { customerId, items } = req.body.reqData; // items: [{ productId, quantity }]
-    if (!customerId || !items?.length) return sendError(res, "Customer and items required");
+    const { customerId, items } = req.body.reqData;
+    
+    if (!customerId || !items?.length) {
+      return sendError(res, "Customer ID and items are required", 400);
+    }
 
+    // Validate customer exists
     const customer = await CustomerDetail.findByPk(customerId);
-    if (!customer) return sendError(res, "Customer not found", 404);
+    if (!customer) {
+      return sendError(res, "Customer not found", 404);
+    }
 
+    if (!customer.razorpayCustomerId) {
+      return sendError(res, "Customer does not have Razorpay ID", 400);
+    }
+
+    // Fetch products and calculate amount
     const products = await Product.findAll({
       where: { id: items.map(i => i.productId) },
     });
 
+    // Validate all products exist
+    const missingProducts = items.filter(i => 
+      !products.find(p => p.id === i.productId)
+    );
+    
+    if (missingProducts.length > 0) {
+      return sendError(res, `Products not found: ${missingProducts.map(p => p.productId).join(', ')}`, 404);
+    }
+
     let amount = 0;
     const enrichedItems = items.map(i => {
       const product = products.find(p => p.id === i.productId);
-      if (!product) throw new Error(`Product with id ${i.productId} not found`);
       const total = Number(product.price) * Number(i.quantity);
       amount += total;
-      return { ...i, price: product.price, total, productDetails: {
-        name: product.name,
-        sku: product.sku,
-        currency: product.currency,
-        unit: product.unit
-      }};
+      
+      return {
+        ...i,
+        price: product.price,
+        total,
+        productDetails: {
+          name: product.name,
+          sku: product.sku,
+          currency: product.currency,
+          unit: product.unit
+        }
+      };
     });
 
+    // Create Razorpay order
     const razorpayOrder = await razorpay.orders.create({
-      amount: Math.round(amount * 100),
+      amount: Math.round(amount * 100), // Convert to paise
       currency: "INR",
-      receipt: `rcpt_${Date.now()}`,
-      notes: { customerId }
+      receipt: `rcpt_${Date.now()}_${customerId}`,
+      notes: { 
+        customerId,
+        internalCustomerId: customerId 
+      }
     });
 
+    // Create order in database
     const order = await Order.create({
       customerId,
       razorpayOrderId: razorpayOrder.id,
       amount,
+      due_amount: amount, // Initially due amount equals total amount
       currency: "INR",
       receipt: razorpayOrder.receipt,
       status: "created",
       createdBy: req.user?.id || null
     });
 
+    // Create order records
     const orderRecords = [];
     for (const item of enrichedItems) {
       const record = await OrderRecord.create({
@@ -54,23 +86,59 @@ export const createOrder = async (req, res) => {
         productId: item.productId,
         quantity: item.quantity,
         price: item.price,
-        total: item.total
+        total: item.total,
+        createdBy: req.user?.id || null
       });
-      orderRecords.push({ ...record.toJSON(), productDetails: item.productDetails });
+      
+      orderRecords.push({
+        ...record.toJSON(),
+        productDetails: item.productDetails
+      });
     }
 
-    return sendSuccess(res, {
-      ...order.toJSON(),
-      items: orderRecords,
-      razorpayOrder
-    });
+    console.log("✅ Order created successfully, generating payment link...");
+
+    // Generate payment link
+    const paymentLink = await generateOrderPaymentLink(order, customer, amount);
+
+    console.log("✅ Payment link generated successfully");
+
+    // Prepare response
+    const response = {
+      order: {
+        ...order.toJSON(),
+        items: orderRecords,
+        razorpayOrder,
+        customerDetails: {
+          name: `${customer.firstName} ${customer.lastName}`,
+          email: customer.email,
+          contact: customer.contact
+        }
+      },
+      paymentLink: {
+        id: paymentLink.id,
+        short_url: paymentLink.short_url,
+        amount: paymentLink.amount,
+        currency: paymentLink.currency,
+        status: paymentLink.status,
+        expire_by: paymentLink.expire_by,
+        created_at: paymentLink.created_at
+      }
+    };
+
+    return sendSuccess(res, response, 201);
 
   } catch (err) {
     console.error("❌ CREATE ORDER ERROR:", err);
-    return sendError(res, err.message);
+    
+    // Handle specific Razorpay errors
+    if (err.error?.code) {
+      return sendError(res, `Payment gateway error: ${err.error.description}`, 400);
+    }
+    
+    return sendError(res, err.message || "Internal server error");
   }
 };
-
 // ✅ Verify Payment
 export const verifyPayment = async (req, res) => {
   try {
