@@ -5,15 +5,27 @@ import sharp from "sharp";
 
 /**
  * Configure multer storage (dynamic folder creation inside uploads/)
- */
+*/
+const BASE_UPLOAD_DIR = "/var/www/wvf_uploads";
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const folder = req.uploadFolder || "uploads/others";
-    const fullFolder = folder.startsWith("uploads") ? folder : path.join("uploads", folder);
-    const uploadDir = path.join(process.cwd(), fullFolder);
+  // destination: (req, file, cb) => {
+  //   const folder = req.uploadFolder || "uploads/others";
+  //   const fullFolder = folder.startsWith("uploads") ? folder : path.join("uploads", folder);
+  //   const uploadDir = path.join(process.cwd(), fullFolder);
+  //   if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+  //   cb(null, uploadDir);
+  // },
+
+destination: (req, file, cb) => {
+    const folder = req.uploadFolder || "others";
+
+    // Every module gets its own folder inside permanent path
+    const uploadDir = path.join(BASE_UPLOAD_DIR, folder);
+
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
     cb(null, uploadDir);
-  },
+},
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     const baseName = path.basename(file.originalname, ext).replace(/\s+/g, "_");
