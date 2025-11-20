@@ -249,19 +249,44 @@ export const compressMultipleImages = async (req, res, next) => {
 /**
  * Convert image path to base64
  */
+/* -------------------------------------------------------------------------- */
+/*                  UPDATED: convertImageToBase64 (LOCAL + VPS)               */
+/* -------------------------------------------------------------------------- */
+
+const LOCAL_BASE = "D:/valley-foods/wild-valley-foods-backend-api/products/";
+const VPS_BASE = "/var/www/uploads/products/";
+
 export const convertImageToBase64 = (filePath) => {
   try {
     if (!filePath) return null;
-    const absPath = path.isAbsolute(filePath) ? filePath : path.join(process.cwd(), filePath);
 
-    if (!fs.existsSync(absPath)) return null;
+    let finalPath = filePath;
 
-    const buffer = fs.readFileSync(absPath);
-    let ext = path.extname(absPath).substring(1).toLowerCase();
+    // Windows = Local machine
+    if (process.platform === "win32") {
+      const filename = path.basename(filePath);
+      finalPath = path.join(LOCAL_BASE, filename);
+    }
+
+    // Linux = VPS
+    else {
+      const filename = path.basename(filePath);
+      finalPath = path.join(VPS_BASE, filename);
+    }
+
+    if (!fs.existsSync(finalPath)) {
+      console.log("❌ Image not found:", finalPath);
+      return null;
+    }
+
+    const buffer = fs.readFileSync(finalPath);
+    let ext = path.extname(finalPath).substring(1).toLowerCase();
+
     if (ext === "jpg") ext = "jpeg";
 
     return `data:image/${ext};base64,${buffer.toString("base64")}`;
-  } catch {
+  } catch (e) {
+    console.error("Base64 convert error:", e);
     return null;
   }
 };
