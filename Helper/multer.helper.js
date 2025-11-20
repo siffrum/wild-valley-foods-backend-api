@@ -6,7 +6,7 @@ import sharp from "sharp";
 /**
  * Configure multer storage (dynamic folder creation inside uploads/)
 */
-const BASE_UPLOAD_DIR = "/var/www/wvf_uploads";
+const BASE_UPLOAD_DIR = "/var/www/";
 const storage = multer.diskStorage({
   // destination: (req, file, cb) => {
   //   const folder = req.uploadFolder || "uploads/others";
