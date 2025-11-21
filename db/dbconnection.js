@@ -98,7 +98,7 @@ let Refund = null;
     
 
     // Database Sync
-    await sequelize.sync({ alter: true });
+    await sequelize.sync();
     console.log("✅ Connection has been established successfully.");
 
     return {
