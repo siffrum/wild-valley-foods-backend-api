@@ -8,38 +8,18 @@ import { dbConnection } from "./db/dbconnection.js";
 dotenv.config();
 const app = express();
 
-// ✅ CORS configuration (must come before routes)
-const allowedOrigin = "https://wvf.onrender.com";
-
 app.use(
   cors({
-    origin: allowedOrigin,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "X-Requested-With",
-      "Accept",
-      "Origin",
-      "targetapitype", 
-      "isdeveloperapk",
-      "appversion",
+    origin: [
+      "https://wildvalleyfoods.in",
+      "https://www.wildvalleyfoods.in"
     ],
+    methods: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+    credentials: true,
   })
 );
 
-// ✅ Handle OPTIONS preflight explicitly
-app.options("*", (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, X-Requested-With, Accept, Origin, targetapitype"
-  );
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.sendStatus(200);
-});
+app.options("*", cors());
 
 // ✅ Body parsers
 app.use(express.json({ limit: "50mb", strict: false }));
