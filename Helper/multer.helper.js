@@ -252,26 +252,22 @@ export const compressMultipleImages = async (req, res, next) => {
 /* -------------------------------------------------------------------------- */
 /*                  UPDATED: convertImageToBase64 (LOCAL + VPS)               */
 /* -------------------------------------------------------------------------- */
-
-const LOCAL_BASE = "D:/valley-foods/wild-valley-foods-backend-api/products/";
-const VPS_BASE = "/var/www/uploads/products/";
+const LOCAL_ROOT = "D:/var/www/";   
+const VPS_ROOT = "/var/www/";
 
 export const convertImageToBase64 = (filePath) => {
   try {
     if (!filePath) return null;
 
-    let finalPath = filePath;
+    // Extract relative path after /var/www/
+    let relativePath = filePath.replace("/var/www/", "").replace("\\var\\www\\", "");
 
-    // Windows = Local machine
+    let finalPath = "";
+
     if (process.platform === "win32") {
-      const filename = path.basename(filePath);
-      finalPath = path.join(LOCAL_BASE, filename);
-    }
-
-    // Linux = VPS
-    else {
-      const filename = path.basename(filePath);
-      finalPath = path.join(VPS_BASE, filename);
+      finalPath = path.join(LOCAL_ROOT, relativePath);
+    } else {
+      finalPath = path.join(VPS_ROOT, relativePath);
     }
 
     if (!fs.existsSync(finalPath)) {
@@ -281,15 +277,15 @@ export const convertImageToBase64 = (filePath) => {
 
     const buffer = fs.readFileSync(finalPath);
     let ext = path.extname(finalPath).substring(1).toLowerCase();
-
     if (ext === "jpg") ext = "jpeg";
 
     return `data:image/${ext};base64,${buffer.toString("base64")}`;
-  } catch (e) {
-    console.error("Base64 convert error:", e);
+  } catch (err) {
+    console.error("Base64 convert error:", err);
     return null;
   }
 };
+
 
 /**
  * Delete file safely

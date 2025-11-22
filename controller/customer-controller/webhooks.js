@@ -3,14 +3,13 @@ import { Router } from "express";
 import crypto from "crypto";
 
 const r = Router();
-
 r.post("/", async (req, res) => {
   const event = req.body.event;
   const payload = req.body.payload;
-  const expectedSignature = crypto
-    .createHmac("sha256", process.env.WEBHOOK_SECRET )
-    .update(bodyString)
-    .digest("hex");
+  // const expectedSignature = crypto
+  //   .createHmac("sha256", process.env.WEBHOOK_SECRET )
+  //   .update(bodyString)
+  //   .digest("hex");
 
   // if (signature !== expectedSignature) {
   //   console.log("❌ Invalid Razorpay Webhook Signature");
