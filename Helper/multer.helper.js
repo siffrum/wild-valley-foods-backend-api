@@ -38,7 +38,11 @@ destination: (req, file, cb) => {
  * Common file filter for all uploaders (images only)
  */
 const fileFilter = (req, file, cb) => {
-  const allowedExt = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".tiff", ".svg"];
+  const allowedExt = [
+    ".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".tiff", ".tif", ".svg",
+    ".heic", ".heif", ".avif"
+  ];
+
   const allowedMime = [
     "image/jpeg",
     "image/png",
@@ -47,16 +51,21 @@ const fileFilter = (req, file, cb) => {
     "image/bmp",
     "image/tiff",
     "image/svg+xml",
+    "image/heic",
+    "image/heif",
+    "image/avif"
   ];
 
   const ext = path.extname(file.originalname).toLowerCase();
   const mime = file.mimetype.toLowerCase();
 
-  if (!allowedExt.includes(ext) || !allowedMime.includes(mime)) {
-    return cb(new Error("Unsupported file type"));
+  if (!allowedExt.includes(ext) && !allowedMime.includes(mime)) {
+    return cb(new Error(`Unsupported file type: ${ext} / ${mime}`));
   }
+
   cb(null, true);
 };
+
 
 /**
  * Internal utility to iteratively compress an image to <= maxKB as WebP.
