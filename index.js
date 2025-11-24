@@ -12,8 +12,8 @@ const app = express();
 // ✅ CORS MUST BE FIRST
 // --------------------------------------------------
 const allowedOrigins = [
-  "https://wildvalleyfoods.in",
-  "https://www.wildvalleyfoods.in",
+  "https://dev.wildvalleyfoods.in",
+  "https://www.dev.wildvalleyfoods.in",
 ];
 
 app.use(
