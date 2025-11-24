@@ -1,3 +1,9 @@
 *****************
 Testing auto trigger on Jenkins when the commit is done on Github.
-  ***************
+*
+*
+*
+*
+*
+Resolving error  of https on first psuh.
+***************
