@@ -13,7 +13,7 @@ import adminReview from "../route/product/review.admin.js"
 import testimonials from "../route/websiteResources/testimonial.route.js";
 import video from "../route/websiteResources/video.route.js"; 
 import orderRoute from "../route/Order/order.route.js"
-
+import express from "express";   
 /**
  * Registers all routes with base paths
  * @param {Express.Application} app 
@@ -29,7 +29,13 @@ export const registerRoutes = (app, baseUrl = "") => {
   app.use(`${baseUrl}/admin/product`, adminProduct);
   app.use(`${baseUrl}/customer`, customer);
   app.use(`${baseUrl}/contactus`, contactus);
-  app.use(`${baseUrl}/webhooks`, webhooks);
+  // app.use(`${baseUrl}/webhooks`, webhooks);
+   // IMPORTANT — RAW BODY FOR WEBHOOK
+  app.use(
+    `${baseUrl}/webhooks`,           // <--- FIXED (api replaced with baseUrl)
+    express.raw({ type: "*/*" }),
+    webhooks
+  );
   app.use(`${baseUrl}/review`, Review);
   app.use(`${baseUrl}/AdminReview`, adminReview);
   app.use(`${baseUrl}/testimonial`, testimonials);
