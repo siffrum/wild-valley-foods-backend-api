@@ -42,7 +42,6 @@ updateProduct
 
 router.delete("/deleteproductById/:id", authenticate, deleteProduct);
 
-router.get("/bestselling/recent", getRecentBestSellingProducts);
 router.put("/bestselling/state/:id", authenticate, updateBestSellingState);
 
 export default router;

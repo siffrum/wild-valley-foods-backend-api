@@ -20,6 +20,7 @@ export const createProduct = async (req, res) => {
       hsn_code: reqData.hsnCode,
       tax_rate: reqData.taxRate,
       unit: reqData.unit,
+
     });
 
     const product = await Product.create({
@@ -280,11 +281,17 @@ export const updateBestSellingState = async (req, res) => {
     }
 
     const { id } = req.params;
-    const { isBestSelling } = req.body; // expects boolean true/false
+
+    // Extract boolResponse from reqData
+    const { boolResponse: isBestSelling } = req.body.reqData || {};
 
     // Validate input
     if (typeof isBestSelling !== "boolean") {
-      return sendError(res, "Please provide a valid boolean value for isBestSelling", 400);
+      return sendError(
+        res,
+        "Please provide a valid boolean value for isBestSelling",
+        400
+      );
     }
 
     // Find product
@@ -307,6 +314,7 @@ export const updateBestSellingState = async (req, res) => {
     return sendError(res, err.message);
   }
 };
+
 
 
 // ✅ GET ALL PRODUCTS

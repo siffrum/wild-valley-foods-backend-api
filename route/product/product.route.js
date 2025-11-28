@@ -7,7 +7,8 @@ import {
   getProductCount,
   getNewArrivalProducts,
   getProductsByCategoryId,
-  getProductCountByCategoryId
+  getProductCountByCategoryId,
+  getRecentBestSellingProducts
 } from "../../controller/product/product.controller.js";
 
 const router = express.Router();
@@ -21,6 +22,8 @@ router.get("/count", getProductCount);   // keep before :id
 // 🔹 New Endpoints
 router.get("/ByCategoryId/:categoryId/paginated", getProductsByCategoryId);
 router.get("/new-arrivals", getNewArrivalProducts);
+router.get("/isBestSelling", getRecentBestSellingProducts);
+
 router.get("/count/ByCategoryId/:categoryId", getProductCountByCategoryId);
 // 🔹 Must be last (dynamic route)
 router.get("/:id", getProductById);
